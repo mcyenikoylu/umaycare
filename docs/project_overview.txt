@@ -1,0 +1,546 @@
+# 01 - Project Overview
+
+**Proje:** BabyCare  
+**Şirket:** Spailor LLC  
+**Tarih:** 2025-01-28  
+**Durum:** MVP Development
+
+---
+
+## 1. Proje Hakkında
+
+BabyCare, anne ve bebek sağlığı takibi için geliştirilmiş kapsamlı bir sağlık platformudur. Anneler, doktorlar ve sağlık asistanları arasında güvenli iletişim ve veri paylaşımı sağlar.
+
+### 1.1 Temel Amaçlar
+- ✅ Bebek sağlık kayıtlarının dijital ortamda güvenli takibi
+- ✅ Anne-doktor arasında kolay randevu yönetimi
+- ✅ Tedavi geçmişi, reçete ve laboratuvar sonuçlarının merkezi saklama
+- ✅ Doktorların hasta takibi ve içerik paylaşımı için profesyonel araçlar
+- ✅ AI destekli sağlık bilgilendirme (sadece anneler için)
+- ✅ Çoklu dil ve çoklu platform desteği
+
+### 1.2 Hedef Kullanıcılar
+
+#### Birincil Kullanıcılar
+- **Anneler:** Bebeklerinin sağlık kayıtlarını takip eden, randevu alan
+- **Doktorlar:** Hasta takibi yapan, tedavi planlayan, içerik üreten
+
+#### İkincil Kullanıcılar
+- **Asistanlar:** Doktor adına randevu yöneten
+- **Eşler/Babalar:** Anne tarafından yetkilendirilen, bebek bilgilerini görüntüleyen
+- **Adminler:** Sistem yöneticileri (@spailor.com)
+
+---
+
+## 2. Platform Ekosistemi
+
+### 2.1 Mobil Uygulama
+- **Platform:** iOS & Android (React Native Expo)
+- **Kullanıcılar:** Anne, Doktor, Eş/Baba
+- **Özellikler:**
+  - Kullanıcı kaydı ve giriş
+  - Bebek kartı yönetimi
+  - Randevu talep etme ve görüntüleme
+  - Tedavi geçmişi görüntüleme
+  - Reçete ve laboratuvar sonuçları
+  - Doktor içeriklerini okuma
+  - AI Chat (sadece anneler)
+  - Hastane/Eczane konumları
+  - Push bildirimleri
+
+### 2.2 Doktor Web Portalı
+- **URL:** portal.domainname.com
+- **Kullanıcılar:** Doktor, Asistan
+- **Özellikler:**
+  - Randevu takvimi yönetimi
+  - Hasta ve bebek kayıtları
+  - Tedavi notları ekleme
+  - Reçete yazma
+  - Laboratuvar test takibi
+  - Makale ve video içerik yönetimi
+  - Asistan yetkilendirme
+  - Müsaitlik takvimi düzenleme
+
+### 2.3 Admin Web Portalı
+- **URL:** admin.domainname.com
+- **Kullanıcılar:** Admin (@spailor.com)
+- **Özellikler:**
+  - Kullanıcı yönetimi
+  - Abonelik ve paket yönetimi
+  - Analytics ve raporlar
+  - İçerik moderasyonu
+  - Sistem ayarları
+
+### 2.4 Marketing Website (Opsiyonel - MVP sonrası)
+- **URL:** www.domainname.com
+- **Amaç:** Landing page, kurumsal bilgiler
+
+---
+
+## 3. Kullanıcı Rolleri ve İzinler
+
+### 3.1 Mother (Anne)
+
+**Yetkiler:**
+- ✅ Kendi profilini yönetme
+- ✅ Bebek kartı oluşturma, düzenleme, arşivleme
+- ✅ Doktor arama ve takip etme
+- ✅ Randevu talep etme
+- ✅ Tedavi geçmişi, reçete, lab sonuçlarını görüntüleme
+- ✅ Doktor içeriklerini okuma (paywall kontrolü ile)
+- ✅ AI Chat kullanma
+- ✅ Eş/Baba hesabına yetki verme
+- ✅ Hastane/Eczane arama
+
+**Sınırlamalar:**
+- ❌ Başka annenin verilerini görüntüleyemez
+- ❌ Doktor içerik yönetimi yapamaz
+- ❌ Admin paneline erişemez
+
+### 3.2 Doctor (Hekim)
+
+**Yetkiler:**
+- ✅ Kendi profilini yönetme (uzmanlık, biyografi, klinik bilgisi)
+- ✅ Randevu takvimi yönetimi
+- ✅ Müsaitlik takvimi ayarlama
+- ✅ Hasta ve bebek kayıtlarını görüntüleme
+- ✅ Tedavi notları ekleme
+- ✅ Reçete yazma
+- ✅ Laboratuvar test talep etme ve sonuç girme
+- ✅ Makale ve video içerik oluşturma/yayınlama
+- ✅ Asistanlara yetki verme
+- ✅ İçerikleri premium olarak işaretleme
+
+**Sınırlamalar:**
+- ❌ Başka doktorun hastalarını görüntüleyemez
+- ❌ Admin işlemleri yapamaz
+- ❌ Ödeme/abonelik ayarlarını değiştiremez
+
+### 3.3 Assistant (Asistan)
+
+**Yetkiler:**
+- ✅ Bağlı olduğu doktorun randevu takvimini görüntüleme
+- ✅ Randevu oluşturma, onaylama, iptal etme
+- ✅ Randevu bilgilerini düzenleme
+- ✅ Doktorun müsaitlik takvimini görüntüleme
+
+**Sınırlamalar:**
+- ❌ Hasta tedavi kayıtlarını görüntüleyemez
+- ❌ Reçete yazamaz
+- ❌ İçerik oluşturamaz
+- ❌ Doktor profil ayarlarını değiştiremez
+
+**İlişki:**
+- Bir asistan **birden fazla doktora** bağlanabilir
+- Bir doktorun **birden fazla asistanı** olabilir
+- İzinler doktor tarafından yönetilir
+
+### 3.4 Partner/Father (Eş/Baba)
+
+**Yetkiler:**
+- ✅ Yetkili olduğu bebek kartlarını görüntüleme
+- ✅ Tedavi geçmişini görüntüleme
+- ✅ Randevuları görüntüleme
+- ✅ Reçete ve lab sonuçlarını görüntüleme
+
+**Sınırlamalar:**
+- ❌ Bebek kartı oluşturamaz veya düzenleyemez
+- ❌ Randevu talep edemez
+- ❌ Anne profilini düzenleyemez
+- ❌ AI Chat kullanamaz
+
+**İlişki:**
+- Sadece **anne tarafından davet** edilebilir
+- Anne, yetkileri **iptal edebilir**
+- Birden fazla anneye bağlanabilir (ayrı çocuklar durumu)
+
+### 3.5 Admin (Sistem Yöneticisi)
+
+**Yetkiler:**
+- ✅ Tüm kullanıcıları görüntüleme ve yönetme
+- ✅ Hesap durumlarını değiştirme (aktif/pasif)
+- ✅ Abonelik ve paket yönetimi
+- ✅ Analytics ve raporlar
+- ✅ İçerik moderasyonu
+- ✅ Sistem ayarları
+
+**Kısıtlamalar:**
+- Sadece **@spailor.com** e-posta adresleri admin olabilir
+- İlk admin hesapları: doga.kilinc@spailor.com, mcy@spailor.com
+- Gelecekte proje domain'i eklenecek
+
+**Alt Roller (Phase 11'de detaylandırılacak):**
+- Super Admin
+- Marketing Admin
+- Support Admin
+- Accounting Admin
+
+---
+
+## 4. Ana Özellikler
+
+### 4.1 Bebek Kartı Yönetimi
+
+**Bebek Bilgileri:**
+- İsim, soyisim
+- Doğum tarihi
+- Cinsiyet (Erkek, Kız, Diğer)
+- Bebek tipi: Tekil, İkiz, Üçüz, Dörtüz
+- İkiz grup ID (ikiz/üçüz bağlantısı için)
+- Kan grubu
+- Alerjiler
+- Fotoğraf (opsiyonel, yoksa default avatar)
+- Notlar
+
+**Özellikler:**
+- ✅ Sınırsız bebek ekleme
+- ✅ İkiz/Üçüz özel işaretleme
+- ✅ Bebek kartı arşivleme (silme değil)
+- ✅ Arşivlenmiş bebek kartları geri yükleme
+- ✅ Eş/Babaya bebek bazlı yetki verme
+
+**Default Avatarlar:**
+```
+/assets/baby-avatars/
+  ├── boy-1.png
+  ├── boy-2.png
+  ├── girl-1.png
+  └── girl-2.png
+```
+
+### 4.2 Randevu Sistemi
+
+**Randevu Akışı:**
+1. Anne doktor müsaitlik takvimini görür
+2. Uygun slot seçer ve bebek kartı seçer
+3. Randevu **talep edilir** (status: requested)
+4. Doktor veya asistan randevuyu **onaylar** (status: confirmed)
+5. Randevu günü geldiğinde muayene yapılır (status: completed)
+6. İptal durumunda (status: cancelled)
+
+**Randevu Bilgileri:**
+- Tarih ve saat
+- Doktor
+- Anne
+- Bebek kartı
+- Sebep
+- Durum (requested, confirmed, cancelled, completed, no_show)
+- Notlar
+- İptal nedeni
+
+**Müsaitlik Yönetimi:**
+- Haftanın günlerine göre recurring slotlar
+- Özel tarih istisnaları (tatil, izin)
+- Slot süresi (örn: 30 dakika)
+
+### 4.3 Tedavi Geçmişi
+
+**Treatment Record:**
+- Randevu bağlantısı
+- Tanı (diagnosis)
+- Tedavi planı
+- Doktor notları
+- Takip tarihi önerisi
+- Takip talimatları
+
+**İlişkili Veriler:**
+- Reçeteler
+- Laboratuvar testleri
+- Dosya ekleri (opsiyonel)
+
+### 4.4 Reçete Yönetimi
+
+**Reçete Bilgileri:**
+- İlaç adı
+- Doz
+- Sıklık (günde 3 kez, vs.)
+- Süre (10 gün, 2 hafta, vs.)
+- Başlangıç tarihi
+- Bitiş tarihi
+- Kullanım talimatları
+
+**Özellikler:**
+- Bir tedavi kaydına birden fazla reçete
+- Geçmiş reçeteleri görüntüleme
+- Aktif reçeteler filtresi
+
+### 4.5 Laboratuvar Test Takibi
+
+**Lab Test Bilgileri:**
+- Test adı
+- Test tipi
+- Durum (ordered, sample_collected, in_progress, completed, cancelled)
+- Sipariş tarihi
+- Numune alma tarihi
+- Sonuç tarihi
+- Sonuç detayları (JSON)
+- Sonuç dosyası (PDF, görüntü)
+- Notlar
+
+**Özellikler:**
+- Doktor test talep eder
+- Numune alındığında güncellenir
+- Sonuç geldiğinde eklenir
+- Anne ve yetkili partner sonucu görür
+
+### 4.6 Doktor İçerik Yönetimi
+
+#### Makaleler
+**Makale Bilgileri:**
+- Başlık
+- Slug (URL-friendly)
+- Özet
+- İçerik (rich text)
+- Dil (en, tr, mk)
+- Kapak görseli
+- Durum (draft, published, unpublished)
+- Premium flag
+- Görüntülenme sayısı
+- Yayın tarihi
+
+**Özellikler:**
+- Taslak kaydetme
+- Yayınlama/Yayından kaldırma
+- Dil bazlı filtreleme
+- Premium içerik işaretleme (paywall)
+
+#### Videolar
+**Video Bilgileri:**
+- Başlık
+- Açıklama
+- Dil
+- Video URL (harici: YouTube, Vimeo, vs.)
+- Thumbnail URL
+- Süre (saniye)
+- Durum
+- Premium flag
+- Görüntülenme sayısı
+
+**Not:** MVP'de video hosting yapılmayacak, sadece harici URL referans edilecek.
+
+### 4.7 AI Chat (Sadece Anneler)
+
+**Özellikler:**
+- **Model:** OpenAI GPT-4o-mini
+- **Kullanım:** Sadece Mother rolü için görünür
+- **Disclaimer:** Her chat ekranında kalıcı uyarı:
+  > "Önemli: Bu AI asistanın sağladığı bilgiler yalnızca genel bilgilendirme amaçlıdır ve tamamen güvenilir olduğu garanti edilemez. Ciddi bir sağlık sorunu veya acil durum için lütfen hemen doktorunuza başvurun."
+
+**Veri Yönetimi:**
+- Günlük chat session'lar
+- Minimal veri saklama
+- Günlük cleanup (eski session'lar temizlenir)
+- Kullanıcı gizliliği öncelikli
+
+**Güvenlik:**
+- Mesaj uzunluk limiti
+- İçerik filtreleme
+- Rate limiting
+- API hatası için graceful handling
+
+### 4.8 Paywall ve Abonelik Sistemi
+
+**Paket Tipleri:**
+
+| Paket | Fiyat | Özellikler |
+|-------|-------|------------|
+| **Free** | $0 | Temel özellikler, sınırlı içerik |
+| **Standard** | $9.99/ay | Bir doktorun tüm premium içeriği |
+| **Premium** | $19.99/ay | Tüm doktorların premium içeriği, öncelikli destek |
+
+**Paywall Kontrolleri:**
+- Free tier: Makale önizleme, 3 makale/ay
+- Standard: Seçili doktorun tüm içeriği
+- Premium: Tüm içerik, erken erişim
+
+**Stripe Entegrasyonu:**
+- Spailor LLC Stripe hesabı
+- Checkout session
+- Webhook handling
+- Subscription management
+- Cancel at period end
+
+### 4.9 Lokasyon Servisi
+
+**Desteklenen Yerler:**
+- Hastaneler
+- Eczaneler
+
+**Özellikler:**
+- Konum bazlı arama
+- Harita görünümü (Mapbox/OpenStreetMap)
+- Liste görünümü (fallback)
+- Detay bilgileri (adres, telefon, website)
+
+**Gizlilik:**
+- Sürekli konum takibi YOK
+- Sadece arama anında kullanılır
+- Konum verisi saklanmaz
+
+### 4.10 Bildirimler
+
+#### Push Notifications (Firebase Cloud Messaging)
+- Randevu onayı
+- Randevu hatırlatma (1 gün önce)
+- Yeni reçete
+- Lab sonucu hazır
+- Partner daveti
+- Yeni içerik (takip edilen doktordan)
+
+#### E-posta Notifications (MailJet)
+- Kayıt onayı (email confirmation)
+- Şifre sıfırlama
+- Randevu özeti
+- Partner davet linki
+- Asistan davet linki
+- Önemli bildirimler
+
+**Sender:** info@spailor.com  
+**Sender Name:** BabyCare by Spailor
+
+---
+
+## 5. Çoklu Dil Desteği
+
+### 5.1 Desteklenen Diller
+- 🇬🇧 **English** (en) - Primary
+- 🇹🇷 **Türkçe** (tr)
+- 🇲🇰 **Македонски** (mk) - Macedonian
+
+### 5.2 İçerik Çevirisi
+- Tüm UI metinleri
+- Sistem mesajları
+- E-posta şablonları
+- Push notification mesajları
+- Validation hataları
+
+### 5.3 Kullanıcı Tercihi
+- Kullanıcı profil ayarlarında dil seçimi
+- Tarayıcı/cihaz dilini otomatik algılama
+- Dil değişikliği anında uygulanır
+
+---
+
+## 6. Güvenlik ve Gizlilik
+
+### 6.1 Kimlik Doğrulama
+- Supabase Auth (JWT)
+- Email confirmation zorunlu
+- Güçlü şifre politikası (min 8 karakter)
+- Şifre sıfırlama (MailJet)
+- Session yönetimi
+- Auto refresh token
+
+### 6.2 Yetkilendirme
+- Role-based access control (RBAC)
+- Row Level Security (RLS) - Supabase
+- API endpoint guards
+- Resource ownership kontrolü
+
+### 6.3 Veri Gizliliği
+- GDPR uyumlu (veri silme hakkı)
+- Veri şifreleme (at rest & in transit)
+- Minimal veri toplama
+- Anonymization (AI chat cleanup)
+- Partner yetki iptali
+
+### 6.4 API Güvenliği
+- Rate limiting
+- Input validation (Zod)
+- SQL injection koruması (Supabase ORM)
+- XSS koruması
+- CORS ayarları
+
+---
+
+## 7. Performans ve Ölçeklenebilirlik
+
+### 7.1 Hedef Metrikler
+- Sayfa yükleme: < 2 saniye
+- API response: < 500ms
+- Mobile app açılış: < 3 saniye
+- Push notification gecikme: < 30 saniye
+
+### 7.2 Optimizasyon Stratejileri
+- Database indexing
+- API response caching
+- Image optimization (WebP, lazy loading)
+- Code splitting (Next.js)
+- Bundle size optimization (Expo)
+
+### 7.3 Ölçeklenebilirlik
+- Horizontal scaling (Hetzner)
+- CDN kullanımı (Supabase Storage)
+- Database read replicas (gelecekte)
+- Microservices yaklaşımı (gelecekte)
+
+---
+
+## 8. Başarı Kriterleri (MVP)
+
+### 8.1 Teknik Kriterler
+- ✅ Tüm 11 phase tamamlanmış
+- ✅ Her phase manuel test edilmiş
+- ✅ Unit testler yazılmış ve geçiyor
+- ✅ CI/CD pipeline çalışıyor
+- ✅ Production deploy başarılı
+
+### 8.2 Fonksiyonel Kriterler
+- ✅ Kullanıcı kayıt/giriş çalışıyor
+- ✅ Bebek kartı CRUD işlemleri
+- ✅ Randevu akışı uçtan uca çalışıyor
+- ✅ Tedavi kayıtları oluşturuluyor
+- ✅ AI Chat çalışıyor (sadece anneler)
+- ✅ Paywall kontrolü aktif
+- ✅ 3 dil desteği çalışıyor
+- ✅ Push ve email bildirimleri gidiyor
+
+### 8.3 Kullanıcı Deneyimi
+- ✅ Responsive tasarım (mobile & web)
+- ✅ Dark/light mode çalışıyor
+- ✅ Hata mesajları anlaşılır
+- ✅ Loading states mevcut
+- ✅ Form validations çalışıyor
+
+---
+
+## 9. Gelecek Roadmap (Post-MVP)
+
+### v1.1 - Geliştirmeler
+- Video hosting entegrasyonu (Cloudflare Stream)
+- Doktor arama ve filtreleme
+- İnceleme ve derecelendirme sistemi
+- Favori doktorlar
+- Bildirim tercihleri
+
+### v1.2 - Sosyal Özellikler
+- Anne topluluk forumu
+- Doktor Q&A
+- Grup chat
+- Etkinlikler
+
+### v2.0 - İleri Özellikler
+- Telemedicine (video call)
+- Wearable device entegrasyonu
+- Vaccine tracking
+- Growth charts
+- Multi-language content support
+
+---
+
+## 10. İletişim ve Destek
+
+**Proje Sahibi:** Spailor LLC  
+**Admin Hesapları:**
+- doga.kilinc@spailor.com
+- mcy@spailor.com
+
+**Genel İletişim:** info@spailor.com  
+**GitHub:** https://github.com/spailor/babycare  
+**Dokümantasyon:** /docs klasörü
+
+---
+
+**Son Güncelleme:** 2025-01-28  
+**Versiyon:** 1.0.0 MVP  
+**Durum:** Development Ready 🚀
