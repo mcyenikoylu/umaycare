@@ -1,0 +1,217 @@
+# BabyCare - Kapsamlı Proje Dokümantasyonu
+
+**Proje Adı:** BabyCare  
+**Üretici Şirket:** Spailor LLC  
+**Versiyon:** 1.0.0 MVP  
+**Son Güncelleme:** 2025-01-28
+
+---
+
+## 📋 Dokümantasyon İndeksi
+
+Bu proje için hazırlanan tüm dokümantasyon dosyaları:
+
+1. **01-PROJECT-OVERVIEW.md** - Proje genel bakış ve gereksinimler
+2. **02-TECHNICAL-ARCHITECTURE.md** - Teknik mimari ve teknoloji stack
+3. **03-DATABASE-SCHEMA.md** - Veritabanı şeması ve ilişkiler
+4. **04-API-DOCUMENTATION.md** - API endpoint'leri ve kullanımı
+5. **05-THEME-DESIGN-SYSTEM.md** - Tema, renkler ve tasarım sistemi
+6. **06-I18N-TRANSLATIONS.md** - Çoklu dil yapısı ve çeviriler
+7. **07-PHASE-01-INSTRUCTIONS.md** - Phase 1 detaylı talimatlar
+8. **08-PHASE-02-INSTRUCTIONS.md** - Phase 2 detaylı talimatlar
+9. **09-PHASE-03-INSTRUCTIONS.md** - Phase 3 detaylı talimatlar
+10. **10-PHASE-04-INSTRUCTIONS.md** - Phase 4 detaylı talimatlar
+11. **11-PHASE-05-INSTRUCTIONS.md** - Phase 5 detaylı talimatlar
+12. **12-PHASE-06-INSTRUCTIONS.md** - Phase 6 detaylı talimatlar
+13. **13-PHASE-07-INSTRUCTIONS.md** - Phase 7 detaylı talimatlar
+14. **14-PHASE-08-INSTRUCTIONS.md** - Phase 8 detaylı talimatlar
+15. **15-PHASE-09-INSTRUCTIONS.md** - Phase 9 detaylı talimatlar
+16. **16-PHASE-10-INSTRUCTIONS.md** - Phase 10 detaylı talimatlar
+17. **17-PHASE-11-INSTRUCTIONS.md** - Phase 11 detaylı talimatlar
+18. **18-DEPLOYMENT-GUIDE.md** - Deployment ve CI/CD kılavuzu
+19. **19-TESTING-STRATEGY.md** - Test stratejisi ve örnekler
+20. **README.md** - Proje readme dosyası
+
+---
+
+## 🚀 Hızlı Başlangıç
+
+### Önkoşullar
+- macOS
+- Node.js 18+
+- npm 9+
+- Git
+- VS Code
+- GitHub Copilot Agent aktif hesap
+
+### Hazırlık
+1. GitHub'da yeni repo oluşturun: `babycare`
+2. VS Code'da GitHub Copilot Agent'ı aktifleştirin
+3. Supabase projesini oluşturun
+4. Gerekli API anahtarlarını hazırlayın:
+   - Supabase URL ve Keys
+   - Stripe API Keys
+   - OpenAI API Key
+   - MailJet API Keys
+   - Firebase FCM Server Key
+
+### Adım Adım Geliştirme
+
+#### 1. Repository Kurulumu
+```bash
+git clone https://github.com/spailor/babycare.git
+cd babycare
+```
+
+#### 2. Phase 1'i Başlatma
+- `07-PHASE-01-INSTRUCTIONS.md` dosyasını açın
+- İçeriği tamamen GitHub Copilot Agent'a kopyalayın
+- Agent'ın her task'ı tamamlamasını bekleyin
+- Phase 1 sonunda manuel test yapın
+
+#### 3. Sonraki Phase'lere Geçiş
+- Her phase tamamlandıktan sonra:
+  - Manuel test yapın
+  - Değişiklikleri commit edin: `git commit -m "Phase X completed"`
+  - Git'e push edin: `git push origin main`
+  - Bir sonraki phase'in `.md` dosyasını Agent'a verin
+
+---
+
+## 📂 Proje Yapısı
+
+```
+babycare/
+├── docs/                          # Bu dokümantasyon dosyaları
+│   ├── 01-PROJECT-OVERVIEW.md
+│   ├── 02-TECHNICAL-ARCHITECTURE.md
+│   └── ...
+├── .github/
+│   └── workflows/                 # CI/CD workflows
+├── packages/
+│   ├── shared/                    # Paylaşılan kod
+│   └── api-client/                # API istemci kütüphanesi
+├── apps/
+│   ├── mobile/                    # React Native Expo
+│   ├── api/                       # Next.js Backend
+│   ├── web-doctor-portal/         # Hekim Web Portalı
+│   └── web-admin-portal/          # Admin Web Portalı
+├── .gitignore
+├── package.json
+├── turbo.json
+└── README.md
+```
+
+---
+
+## 🎯 Geliştirme Süreci
+
+### Phase Bazlı Yaklaşım
+Bu proje 11 phase'e ayrılmıştır. Her phase:
+
+1. **Açık hedefler** içerir
+2. **Detaylı task'lara** bölünmüştür
+3. **Kod örnekleri** ile desteklenmiştir
+4. **Test gereksinimleri** tanımlanmıştır
+5. **Completion checklist** ile doğrulanır
+
+### Agent Kullanım Kuralları
+
+#### ✅ YAPILMASI GEREKENLER
+- Her phase'in talimatlarını **tamamen** okuyun
+- Task'ları **sırayla** uygulayın
+- Kod örneklerini **aynen** kullanın (namespace: BabyCare)
+- Her task sonunda **test** edin
+- Phase sonunda **özet** çıkarın
+
+#### ❌ YAPILMAMASI GEREKENLER
+- Phase'leri **atlamayın**
+- Teknoloji stack'i **değiştirmeyin**
+- Kendi kararınızla yeni kütüphane **eklemeyin**
+- Phase tamamlanmadan sonrakine **geçmeyin**
+- Manuel test onayı olmadan **devam etmeyin**
+
+---
+
+## 🔑 Ortam Değişkenleri
+
+### API (.env.local)
+```env
+NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
+SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
+STRIPE_SECRET_KEY=sk_test_...
+OPENAI_API_KEY=sk-...
+MAILJET_API_KEY=your-key
+MAILJET_API_SECRET=your-secret
+MAILJET_FROM_EMAIL=info@spailor.com
+FCM_SERVER_KEY=your-fcm-key
+```
+
+### Mobile (.env)
+```env
+EXPO_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
+EXPO_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
+EXPO_PUBLIC_API_URL=https://api.domainname.com
+EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_test_...
+```
+
+---
+
+## 👥 Roller ve Yetkiler
+
+| Rol | Açıklama | Ana Özellikler |
+|-----|----------|----------------|
+| **Mother** | Birincil kullanıcı | Bebek yönetimi, randevu, AI chat |
+| **Doctor** | Sağlık hizmeti sağlayıcı | Randevu yönetimi, tedavi kayıtları, içerik |
+| **Assistant** | Hekime bağlı yardımcı | Sadece randevu yönetimi |
+| **Partner** | Anne tarafından yetkilendirilir | Bebek bilgilerini görüntüleme |
+| **Admin** | Sistem yöneticisi | Tüm kullanıcıları yönetme |
+
+---
+
+## 🎨 Renk Paleti
+
+```
+Soft Blush:    #ffe2d9
+White:         #fffdfc
+Light Coral:   #d67a7a (Primary)
+Lavender Veil: #e3d4f3 (Secondary)
+Sky Blue:      #7bc7f3 (Accent)
+Stone Brown:   #524947 (Text)
+```
+
+---
+
+## 🌍 Desteklenen Diller
+
+- **English** (en) - Primary
+- **Türkçe** (tr)
+- **Македонски** (mk) - Macedonian
+
+---
+
+## 📞 İletişim ve Destek
+
+**Proje Sahibi:** Spailor LLC  
+**Admin 1:** doga.kilinc@spailor.com  
+**Admin 2:** mcy@spailor.com  
+**Genel İletişim:** info@spailor.com
+
+---
+
+## 📄 Lisans
+
+© 2025 Spailor LLC. Tüm hakları saklıdır.
+
+---
+
+## 📚 Sonraki Adımlar
+
+1. ✅ Tüm dokümantasyon dosyalarını indirin
+2. ✅ Gerekli hesapları ve API anahtarlarını hazırlayın
+3. ✅ GitHub repository'yi oluşturun
+4. ✅ `07-PHASE-01-INSTRUCTIONS.md` ile başlayın
+5. ✅ Her phase'i sırayla tamamlayın
+
+**Başarılar! 🚀**
