@@ -1,7 +1,7 @@
 # 02 - Technical Architecture
 
-**Proje:** BabyCare  
-**Tarih:** 2025-01-28  
+**Proje:** Umay Care  
+**Tarih:** 2026-01-28  
 **Dosya:** Technical Architecture & Stack
 
 ---
@@ -10,19 +10,19 @@
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│                      CLIENT LAYER                            │
+│                      CLIENT LAYER                           │
 ├───────────────────┬─────────────────────┬──────────────────┤
 │   Mobile App      │  Doctor Web Portal  │  Admin Portal    │
-│  (React Native)   │    (Next.js)        │   (Next.js)      │
+│  (React Native)   │    (React.js)       │   (React.js)     │
 │   iOS & Android   │                     │                  │
 └───────────────────┴─────────────────────┴──────────────────┘
                               │
                               ▼
 ┌─────────────────────────────────────────────────────────────┐
-│                      API LAYER                               │
-│                  Next.js API Routes                          │
-│               (Hetzner Ubuntu 22 Server)                     │
-│         api.domainname.com                                   │
+│                      API LAYER                              │
+│                  Next.js API Routes                         │
+│               (Hetzner Ubuntu 22 Server)                    │
+│                    api.umaycare.com                         │
 └─────────────────────────────────────────────────────────────┘
                               │
                               ▼
@@ -34,7 +34,7 @@
                               ▼
 ┌─────────────────────────────────────────────────────────────┐
 │              INFRASTRUCTURE LAYER                            │
-│  Hetzner (API + Web) | Firebase (FCM) | GitHub (CI/CD)      │
+│  Hetzner (API + Web) | Supabase (FCM) | GitHub (CI/CD)      │
 └─────────────────────────────────────────────────────────────┘
 ```
 
@@ -47,7 +47,7 @@
 ```json
 {
   "platform": "React Native",
-  "tool": "Expo SDK 51+",
+  "tool": "Expo SDK 54+",
   "language": "TypeScript 5.x",
   "navigation": "Expo Router (File-based)",
   "state_management": "Zustand",
@@ -536,7 +536,7 @@ export const fcm = admin.messaging();
 **Deployment Structure:**
 ```
 /var/www/
-├── babycare-api/
+├── umaycare-api/
 │   ├── .next/
 │   ├── package.json
 │   └── .env.production
@@ -555,8 +555,8 @@ export const fcm = admin.messaging();
 {
   "apps": [
     {
-      "name": "babycare-api",
-      "cwd": "/var/www/babycare-api",
+      "name": "umaycare-api",
+      "cwd": "/var/www/umaycare-api",
       "script": "npm",
       "args": "start",
       "env": {
@@ -590,7 +590,7 @@ export const fcm = admin.messaging();
 
 **Nginx Configuration:**
 ```nginx
-# /etc/nginx/sites-available/babycare-api
+# /etc/nginx/sites-available/umaycare-api
 server {
     listen 80;
     server_name api.domainname.com;
@@ -713,7 +713,7 @@ jobs:
           username: ${{ secrets.HETZNER_USER }}
           key: ${{ secrets.HETZNER_SSH_KEY }}
           source: "apps/api/.next,apps/api/package.json"
-          target: "/var/www/babycare-api"
+          target: "/var/www/umaycare-api"
       
       - name: Restart PM2
         uses: appleboy/ssh-action@master
@@ -722,9 +722,9 @@ jobs:
           username: ${{ secrets.HETZNER_USER }}
           key: ${{ secrets.HETZNER_SSH_KEY }}
           script: |
-            cd /var/www/babycare-api
+            cd /var/www/umaycare-api
             npm install --production
-            pm2 restart babycare-api
+            pm2 restart umaycare-api
 ```
 
 ---
@@ -770,7 +770,7 @@ if (process.env.NODE_ENV !== 'production') {
 ```bash
 # Basic monitoring commands
 pm2 status
-pm2 logs babycare-api
+pm2 logs umaycare-api
 pm2 monit
 
 # Nginx logs
@@ -921,7 +921,7 @@ export async function POST(request: NextRequest) {
 ```json
 // Root package.json
 {
-  "name": "babycare-monorepo",
+  "name": "umaycare",
   "private": true,
   "workspaces": [
     "packages/*",
@@ -998,13 +998,9 @@ OPENAI_API_KEY=
 MAILJET_API_KEY=
 MAILJET_API_SECRET=
 MAILJET_FROM_EMAIL=info@spailor.com
-MAILJET_FROM_NAME=BabyCare by Spailor
+MAILJET_FROM_NAME=umaycare by Spailor
 
-# Firebase
-FCM_SERVER_KEY=
-FIREBASE_PROJECT_ID=
-FIREBASE_CLIENT_EMAIL=
-FIREBASE_PRIVATE_KEY=
+# Supabase
 
 # Mapbox (optional)
 MAPBOX_ACCESS_TOKEN=

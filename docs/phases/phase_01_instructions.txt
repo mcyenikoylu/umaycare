@@ -1,0 +1,2002 @@
+# Phase 1 - User Roles, Accounts, and Basic Navigation
+
+**Phase:** 1 of 11  
+**Goal:** Set up fundamental user accounts, roles, authentication, and basic navigation  
+**Estimated Time:** 8-12 hours  
+**Prerequisites:** GitHub repo, Supabase account, development environment ready
+
+---
+
+## ⚠️ IMPORTANT: Read Before Starting
+
+### Agent Rules
+- ✅ Follow these instructions **exactly** and **in order**
+- ✅ Use **TypeScript** for all code
+- ✅ Project namespace: **umaycare** (do not change)
+- ✅ Complete **all tasks** before stopping
+- ✅ After completion, **summarize** and **ask for manual testing**
+- ❌ Do NOT skip tasks
+- ❌ Do NOT change technology stack
+- ❌ Do NOT add libraries not specified
+- ❌ Do NOT proceed to Phase 2 without confirmation
+
+---
+
+## 📋 Phase 1 Objectives
+
+1. ✅ Create monorepo structure with npm workspaces
+2. ✅ Set up Supabase connection and authentication
+3. ✅ Implement database schema with user roles
+4. ✅ Create shared packages (types, theme, i18n)
+5. ✅ Build backend API with auth endpoints
+6. ✅ Build mobile app with login/register
+7. ✅ Implement role-based navigation
+8. ✅ Set up i18n (English, Turkish, Macedonian)
+9. ✅ Implement theme system (light/dark mode)
+10. ✅ Write basic unit tests
+
+---
+
+## 🎯 Task 1: Monorepo Structure
+
+### 1.1 Initialize Root Project
+
+```bash
+# Create project directory
+mkdir umaycare
+cd umaycare
+
+# Initialize npm
+npm init -y
+```
+
+### 1.2 Configure Package.json
+
+Create `package.json`:
+
+```json
+{
+  "name": "umaycare-monorepo",
+  "version": "1.0.0",
+  "private": true,
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
+  "scripts": {
+    "dev:mobile": "npm run dev --workspace=apps/mobile",
+    "dev:api": "npm run dev --workspace=apps/api",
+    "dev:doctor": "npm run dev --workspace=apps/web-doctor-portal",
+    "dev:admin": "npm run dev --workspace=apps/web-admin-portal",
+    "build": "npm run build --workspaces",
+    "test": "npm run test --workspaces",
+    "lint": "npm run lint --workspaces",
+    "type-check": "npm run type-check --workspaces"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.0",
+    "typescript": "^5.3.3",
+    "prettier": "^3.1.1",
+    "eslint": "^8.56.0"
+  }
+}
+```
+
+### 1.3 Create Directory Structure
+
+```bash
+# Create folders
+mkdir -p packages/shared/{types,utils,constants,i18n,theme}
+mkdir -p packages/api-client/src
+mkdir -p apps/mobile
+mkdir -p apps/api
+mkdir -p apps/web-doctor-portal
+mkdir -p apps/web-admin-portal
+mkdir -p .github/workflows
+mkdir -p docs
+```
+
+### 1.4 Root TypeScript Config
+
+Create `tsconfig.json`:
+
+```json
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "lib": ["ES2020"],
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "esModuleInterop": true,
+    "strict": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "resolveJsonModule": true,
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true
+  }
+}
+```
+
+### 1.5 Create .gitignore
+
+```
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Testing
+coverage/
+
+# Production
+build/
+dist/
+.next/
+out/
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+
+# Expo
+.expo/
+.expo-shared/
+
+# Metro
+.metro-health-check*
+```
+
+---
+
+## 🎯 Task 2: Shared Package Setup
+
+### 2.1 Shared Package.json
+
+Create `packages/shared/package.json`:
+
+```json
+{
+  "name": "@umaycare/shared",
+  "version": "1.0.0",
+  "main": "index.ts",
+  "types": "index.ts",
+  "dependencies": {
+    "i18next": "^23.7.0",
+    "zod": "^3.22.4"
+  },
+  "devDependencies": {
+    "typescript": "^5.3.3"
+  }
+}
+```
+
+### 2.2 Color Theme
+
+Create `packages/shared/theme/colors.ts`:
+
+```typescript
+export const colors = {
+  softBlush: '#ffe2d9',
+  white: '#fffdfc',
+  lightCoral: '#d67a7a',
+  lavenderVeil: '#e3d4f3',
+  skyBlue: '#7bc7f3',
+  stoneBrown: '#524947'
+} as const;
+
+export const theme = {
+  light: {
+    primary: colors.lightCoral,
+    secondary: colors.lavenderVeil,
+    accent: colors.skyBlue,
+    background: colors.white,
+    surface: colors.softBlush,
+    text: colors.stoneBrown,
+    textSecondary: '#6b6462',
+    border: '#e5e5e5',
+    error: '#dc2626',
+    success: '#16a34a',
+    warning: '#ea580c',
+    info: colors.skyBlue
+  },
+  dark: {
+    primary: colors.lightCoral,
+    secondary: colors.lavenderVeil,
+    accent: colors.skyBlue,
+    background: '#1a1a1a',
+    surface: '#2d2d2d',
+    text: colors.white,
+    textSecondary: '#a3a3a3',
+    border: '#404040',
+    error: '#ef4444',
+    success: '#22c55e',
+    warning: '#f97316',
+    info: colors.skyBlue
+  }
+} as const;
+
+export type Theme = typeof theme.light;
+export type ThemeMode = 'light' | 'dark';
+```
+
+Create `packages/shared/theme/index.ts`:
+
+```typescript
+export * from './colors';
+```
+
+### 2.3 Type Definitions
+
+Create `packages/shared/types/user.ts`:
+
+```typescript
+export type UserRole = 'mother' | 'doctor' | 'assistant' | 'partner' | 'admin';
+export type Language = 'en' | 'tr' | 'mk';
+
+export interface User {
+  id: string;
+  email: string;
+  role: UserRole;
+  full_name: string;
+  phone?: string;
+  preferred_language: Language;
+  avatar_url?: string;
+  notification_settings?: {
+    email: boolean;
+    push: boolean;
+  };
+  created_at: string;
+  updated_at: string;
+}
+
+export interface MotherProfile extends User {
+  role: 'mother';
+  date_of_birth?: string;
+  address?: string;
+  emergency_contact?: {
+    name: string;
+    phone: string;
+    relationship: string;
+  };
+}
+
+export interface DoctorProfile extends User {
+  role: 'doctor';
+  specialty?: string;
+  license_number?: string;
+  biography?: string;
+  clinic_name?: string;
+  clinic_address?: string;
+  clinic_phone?: string;
+  languages_spoken?: string[];
+  years_of_experience?: number;
+  is_verified: boolean;
+}
+
+export interface AssistantProfile extends User {
+  role: 'assistant';
+}
+
+export interface PartnerProfile extends User {
+  role: 'partner';
+}
+
+export interface AdminProfile extends User {
+  role: 'admin';
+  admin_level?: 'super' | 'marketing' | 'support' | 'accounting';
+}
+
+export type UserProfile = MotherProfile | DoctorProfile | AssistantProfile | PartnerProfile | AdminProfile;
+```
+
+Create `packages/shared/types/index.ts`:
+
+```typescript
+export * from './user';
+```
+
+### 2.4 Constants
+
+Create `packages/shared/constants/roles.ts`:
+
+```typescript
+export const ROLES = {
+  MOTHER: 'mother',
+  DOCTOR: 'doctor',
+  ASSISTANT: 'assistant',
+  PARTNER: 'partner',
+  ADMIN: 'admin'
+} as const;
+
+export const ADMIN_EMAILS = [
+  'doga.kilinc@spailor.com',
+  'mcy@spailor.com'
+];
+
+export const ADMIN_DOMAINS = [
+  'spailor.com'
+  // Project domain will be added later
+];
+```
+
+Create `packages/shared/constants/index.ts`:
+
+```typescript
+export * from './roles';
+```
+
+### 2.5 i18n Files
+
+Create `packages/shared/i18n/en.json`:
+
+```json
+{
+  "common": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "back": "Back",
+    "next": "Next",
+    "loading": "Loading...",
+    "error": "An error occurred",
+    "success": "Success",
+    "confirm": "Confirm",
+    "yes": "Yes",
+    "no": "No"
+  },
+  "auth": {
+    "login": "Log In",
+    "register": "Sign Up",
+    "logout": "Log Out",
+    "email": "Email",
+    "password": "Password",
+    "full_name": "Full Name",
+    "phone": "Phone",
+    "forgot_password": "Forgot Password?",
+    "register_as_mother": "Register as Mother",
+    "register_as_doctor": "Register as Doctor",
+    "register_as_partner": "Register as Partner",
+    "already_have_account": "Already have an account?",
+    "dont_have_account": "Don't have an account?",
+    "password_min_length": "Password must be at least 8 characters",
+    "invalid_email": "Invalid email address",
+    "login_success": "Login successful",
+    "login_failed": "Login failed",
+    "register_success": "Registration successful. Please check your email to confirm.",
+    "register_failed": "Registration failed",
+    "check_email": "Please check your email to confirm your account"
+  },
+  "navigation": {
+    "home": "Home",
+    "profile": "Profile",
+    "settings": "Settings"
+  },
+  "mother": {
+    "home_title": "My Babies"
+  },
+  "doctor": {
+    "home_title": "Dashboard"
+  },
+  "admin": {
+    "home_title": "Admin Panel"
+  }
+}
+```
+
+Create `packages/shared/i18n/tr.json`:
+
+```json
+{
+  "common": {
+    "save": "Kaydet",
+    "cancel": "İptal",
+    "delete": "Sil",
+    "edit": "Düzenle",
+    "back": "Geri",
+    "next": "İleri",
+    "loading": "Yükleniyor...",
+    "error": "Bir hata oluştu",
+    "success": "Başarılı",
+    "confirm": "Onayla",
+    "yes": "Evet",
+    "no": "Hayır"
+  },
+  "auth": {
+    "login": "Giriş Yap",
+    "register": "Kayıt Ol",
+    "logout": "Çıkış Yap",
+    "email": "E-posta",
+    "password": "Şifre",
+    "full_name": "Ad Soyad",
+    "phone": "Telefon",
+    "forgot_password": "Şifremi Unuttum",
+    "register_as_mother": "Anne Olarak Kayıt Ol",
+    "register_as_doctor": "Hekim Olarak Kayıt Ol",
+    "register_as_partner": "Eş Olarak Kayıt Ol",
+    "already_have_account": "Zaten hesabınız var mı?",
+    "dont_have_account": "Hesabınız yok mu?",
+    "password_min_length": "Şifre en az 8 karakter olmalıdır",
+    "invalid_email": "Geçersiz e-posta adresi",
+    "login_success": "Giriş başarılı",
+    "login_failed": "Giriş başarısız",
+    "register_success": "Kayıt başarılı. Lütfen e-postanızı kontrol edin.",
+    "register_failed": "Kayıt başarısız",
+    "check_email": "Hesabınızı onaylamak için lütfen e-postanızı kontrol edin"
+  },
+  "navigation": {
+    "home": "Ana Sayfa",
+    "profile": "Profil",
+    "settings": "Ayarlar"
+  },
+  "mother": {
+    "home_title": "Bebeklerim"
+  },
+  "doctor": {
+    "home_title": "Panel"
+  },
+  "admin": {
+    "home_title": "Yönetim Paneli"
+  }
+}
+```
+
+Create `packages/shared/i18n/mk.json`:
+
+```json
+{
+  "common": {
+    "save": "Зачувај",
+    "cancel": "Откажи",
+    "delete": "Избриши",
+    "edit": "Измени",
+    "back": "Назад",
+    "next": "Следно",
+    "loading": "Се вчитува...",
+    "error": "Настана грешка",
+    "success": "Успешно",
+    "confirm": "Потврди",
+    "yes": "Да",
+    "no": "Не"
+  },
+  "auth": {
+    "login": "Најава",
+    "register": "Регистрација",
+    "logout": "Одјава",
+    "email": "Е-пошта",
+    "password": "Лозинка",
+    "full_name": "Име и презиме",
+    "phone": "Телефон",
+    "forgot_password": "Заборавена лозинка?",
+    "register_as_mother": "Регистрирај се како мајка",
+    "register_as_doctor": "Регистрирај се како лекар",
+    "register_as_partner": "Регистрирај се како партнер",
+    "already_have_account": "Веќе имате сметка?",
+    "dont_have_account": "Немате сметка?",
+    "password_min_length": "Лозинката мора да содржи најмалку 8 карактери",
+    "invalid_email": "Невалидна адреса за е-пошта",
+    "login_success": "Најавата е успешна",
+    "login_failed": "Најавата не успеа",
+    "register_success": "Регистрацијата е успешна. Проверете ја вашата е-пошта.",
+    "register_failed": "Регистрацијата не успеа",
+    "check_email": "Проверете ја вашата е-пошта за да ја потврдите сметката"
+  },
+  "navigation": {
+    "home": "Дома",
+    "profile": "Профил",
+    "settings": "Поставки"
+  },
+  "mother": {
+    "home_title": "Моите беби"
+  },
+  "doctor": {
+    "home_title": "Контролна табла"
+  },
+  "admin": {
+    "home_title": "Админ панел"
+  }
+}
+```
+
+Create `packages/shared/i18n/index.ts`:
+
+```typescript
+import en from './en.json';
+import tr from './tr.json';
+import mk from './mk.json';
+
+export const translations = {
+  en,
+  tr,
+  mk
+};
+
+export type TranslationKey = keyof typeof en;
+```
+
+### 2.6 Shared Index
+
+Create `packages/shared/index.ts`:
+
+```typescript
+export * from './types';
+export * from './theme';
+export * from './constants';
+export * from './i18n';
+```
+
+---
+
+## 🎯 Task 3: Supabase Database Setup
+
+### 3.1 Create Supabase Project
+
+1. Go to https://supabase.com
+2. Create new project
+3. Save project URL and keys
+4. Wait for database to initialize
+
+### 3.2 Database Migration
+
+Create `apps/api/supabase/migrations/001_initial_schema.sql`:
+
+```sql
+-- Enable UUID extension
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+
+-- User roles enum
+CREATE TYPE user_role AS ENUM ('mother', 'doctor', 'assistant', 'partner', 'admin');
+
+-- Languages enum
+CREATE TYPE language_code AS ENUM ('en', 'tr', 'mk');
+
+-- =============================================
+-- PROFILES
+-- =============================================
+
+-- Main profiles table (extends auth.users)
+CREATE TABLE profiles (
+  id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+  role user_role NOT NULL,
+  full_name VARCHAR(255) NOT NULL,
+  phone VARCHAR(50),
+  preferred_language language_code DEFAULT 'en',
+  avatar_url TEXT,
+  notification_settings JSONB DEFAULT '{"email": true, "push": true}'::jsonb,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Mother profiles
+CREATE TABLE mother_profiles (
+  id UUID PRIMARY KEY REFERENCES profiles(id) ON DELETE CASCADE,
+  date_of_birth DATE,
+  address TEXT,
+  emergency_contact JSONB,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Doctor profiles
+CREATE TABLE doctor_profiles (
+  id UUID PRIMARY KEY REFERENCES profiles(id) ON DELETE CASCADE,
+  specialty VARCHAR(255),
+  license_number VARCHAR(100),
+  biography TEXT,
+  clinic_name VARCHAR(255),
+  clinic_address TEXT,
+  clinic_phone VARCHAR(50),
+  languages_spoken VARCHAR(5)[] DEFAULT ARRAY['en']::VARCHAR[],
+  years_of_experience INTEGER,
+  is_verified BOOLEAN DEFAULT FALSE,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- =============================================
+-- INDEXES
+-- =============================================
+
+CREATE INDEX idx_profiles_role ON profiles(role);
+CREATE INDEX idx_profiles_email ON profiles(id);
+
+-- =============================================
+-- RLS POLICIES
+-- =============================================
+
+-- Enable RLS
+ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
+ALTER TABLE mother_profiles ENABLE ROW LEVEL SECURITY;
+ALTER TABLE doctor_profiles ENABLE ROW LEVEL SECURITY;
+
+-- Profiles policies
+CREATE POLICY "Users can view own profile" ON profiles
+  FOR SELECT USING (auth.uid() = id);
+
+CREATE POLICY "Users can update own profile" ON profiles
+  FOR UPDATE USING (auth.uid() = id);
+
+-- Mother profiles policies
+CREATE POLICY "Mothers can view own profile" ON mother_profiles
+  FOR SELECT USING (auth.uid() = id);
+
+CREATE POLICY "Mothers can update own profile" ON mother_profiles
+  FOR UPDATE USING (auth.uid() = id);
+
+-- Doctor profiles policies
+CREATE POLICY "Anyone can view doctor profiles" ON doctor_profiles
+  FOR SELECT USING (true);
+
+CREATE POLICY "Doctors can update own profile" ON doctor_profiles
+  FOR UPDATE USING (auth.uid() = id);
+
+-- =============================================
+-- FUNCTIONS
+-- =============================================
+
+-- Function to handle user registration
+CREATE OR REPLACE FUNCTION handle_new_user()
+RETURNS TRIGGER AS $$
+BEGIN
+  INSERT INTO profiles (id, role, full_name, phone, preferred_language)
+  VALUES (
+    NEW.id,
+    COALESCE((NEW.raw_user_meta_data->>'role')::user_role, 'mother'),
+    COALESCE(NEW.raw_user_meta_data->>'full_name', ''),
+    NEW.raw_user_meta_data->>'phone',
+    COALESCE((NEW.raw_user_meta_data->>'preferred_language')::language_code, 'en')
+  );
+
+  -- Create role-specific profile
+  IF (NEW.raw_user_meta_data->>'role') = 'mother' THEN
+    INSERT INTO mother_profiles (id) VALUES (NEW.id);
+  ELSIF (NEW.raw_user_meta_data->>'role') = 'doctor' THEN
+    INSERT INTO doctor_profiles (id, is_verified) VALUES (NEW.id, FALSE);
+  END IF;
+
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- Trigger for new user
+CREATE TRIGGER on_auth_user_created
+  AFTER INSERT ON auth.users
+  FOR EACH ROW EXECUTE FUNCTION handle_new_user();
+
+-- Function to update updated_at
+CREATE OR REPLACE FUNCTION update_updated_at_column()
+RETURNS TRIGGER AS $$
+BEGIN
+  NEW.updated_at = NOW();
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Triggers for updated_at
+CREATE TRIGGER update_profiles_updated_at BEFORE UPDATE ON profiles
+  FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+CREATE TRIGGER update_mother_profiles_updated_at BEFORE UPDATE ON mother_profiles
+  FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+CREATE TRIGGER update_doctor_profiles_updated_at BEFORE UPDATE ON doctor_profiles
+  FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+```
+
+Run this SQL in Supabase SQL Editor.
+
+---
+
+## 🎯 Task 4: Backend API Setup
+
+### 4.1 Initialize Next.js API
+
+```bash
+cd apps
+npx create-next-app@latest api --typescript --tailwind --app --no-src-dir
+cd api
+```
+
+### 4.2 Install Dependencies
+
+```bash
+npm install @supabase/supabase-js @supabase/ssr zod
+npm install -D @types/node
+```
+
+### 4.3 API Package.json
+
+Update `apps/api/package.json`:
+
+```json
+{
+  "name": "@umaycare/api",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev -p 3000",
+    "build": "next build",
+    "start": "next start -p 3000",
+    "lint": "next lint",
+    "type-check": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@umaycare/shared": "*",
+    "@supabase/supabase-js": "^2.39.0",
+    "@supabase/ssr": "^0.0.10",
+    "next": "14.0.4",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "zod": "^3.22.4"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.0",
+    "@types/react": "^18.2.42",
+    "@types/react-dom": "^18.2.17",
+    "typescript": "^5.3.3"
+  }
+}
+```
+
+### 4.4 Environment Variables
+
+Create `apps/api/.env.local`:
+
+```env
+NEXT_PUBLIC_SUPABASE_URL=your-supabase-url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
+SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
+FRONTEND_URL=http://localhost:19006
+NODE_ENV=development
+```
+
+Create `apps/api/.env.example`:
+
+```env
+NEXT_PUBLIC_SUPABASE_URL=
+NEXT_PUBLIC_SUPABASE_ANON_KEY=
+SUPABASE_SERVICE_ROLE_KEY=
+FRONTEND_URL=
+NODE_ENV=development
+```
+
+### 4.5 Supabase Client
+
+Create `apps/api/lib/supabase.ts`:
+
+```typescript
+import { createClient } from '@supabase/supabase-js';
+
+export const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!,
+  {
+    auth: {
+      autoRefreshToken: false,
+      persistSession: false
+    }
+  }
+);
+
+export const supabaseClient = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+);
+```
+
+### 4.6 Auth Middleware
+
+Create `apps/api/lib/middleware/auth.ts`:
+
+```typescript
+import { NextRequest, NextResponse } from 'next/server';
+import { supabase } from '../supabase';
+
+export async function withAuth(
+  request: NextRequest,
+  allowedRoles?: string[]
+) {
+  const authHeader = request.headers.get('authorization');
+  
+  if (!authHeader?.startsWith('Bearer ')) {
+    return NextResponse.json(
+      { error: 'Unauthorized' },
+      { status: 401 }
+    );
+  }
+
+  const token = authHeader.substring(7);
+  
+  const { data: { user }, error } = await supabase.auth.getUser(token);
+
+  if (error || !user) {
+    return NextResponse.json(
+      { error: 'Unauthorized' },
+      { status: 401 }
+    );
+  }
+
+  // Get user profile with role
+  const { data: profile, error: profileError } = await supabase
+    .from('profiles')
+    .select('*')
+    .eq('id', user.id)
+    .single();
+
+  if (profileError || !profile) {
+    return NextResponse.json(
+      { error: 'Profile not found' },
+      { status: 404 }
+    );
+  }
+
+  // Check role authorization
+  if (allowedRoles && !allowedRoles.includes(profile.role)) {
+    return NextResponse.json(
+      { error: 'Forbidden' },
+      { status: 403 }
+    );
+  }
+
+  return { user, profile };
+}
+```
+
+### 4.7 Register Endpoint
+
+Create `apps/api/app/api/auth/register/route.ts`:
+
+```typescript
+import { NextRequest, NextResponse } from 'next/server';
+import { supabase } from '@/lib/supabase';
+import { z } from 'zod';
+
+const registerSchema = z.object({
+  email: z.string().email(),
+  password: z.string().min(8),
+  full_name: z.string().min(2),
+  role: z.enum(['mother', 'doctor', 'partner']),
+  phone: z.string().optional(),
+  preferred_language: z.enum(['en', 'tr', 'mk']).default('en')
+});
+
+export async function POST(request: NextRequest) {
+  try {
+    const body = await request.json();
+    const validatedData = registerSchema.parse(body);
+
+    const { data, error } = await supabase.auth.signUp({
+      email: validatedData.email,
+      password: validatedData.password,
+      options: {
+        data: {
+          full_name: validatedData.full_name,
+          role: validatedData.role,
+          phone: validatedData.phone,
+          preferred_language: validatedData.preferred_language
+        },
+        emailRedirectTo: `${process.env.FRONTEND_URL}/auth/confirm`
+      }
+    });
+
+    if (error) {
+      return NextResponse.json(
+        { error: error.message },
+        { status: 400 }
+      );
+    }
+
+    return NextResponse.json({
+      message: 'Registration successful. Please check your email to confirm.',
+      user: data.user
+    });
+
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      return NextResponse.json(
+        { error: 'Validation failed', details: error.errors },
+        { status: 400 }
+      );
+    }
+
+    console.error('Registration error:', error);
+    return NextResponse.json(
+      { error: 'Registration failed' },
+      { status: 500 }
+    );
+  }
+}
+```
+
+### 4.8 Login Endpoint
+
+Create `apps/api/app/api/auth/login/route.ts`:
+
+```typescript
+import { NextRequest, NextResponse } from 'next/server';
+import { supabase } from '@/lib/supabase';
+import { z } from 'zod';
+
+const loginSchema = z.object({
+  email: z.string().email(),
+  password: z.string()
+});
+
+export async function POST(request: NextRequest) {
+  try {
+    const body = await request.json();
+    const { email, password } = loginSchema.parse(body);
+
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email,
+      password
+    });
+
+    if (error) {
+      return NextResponse.json(
+        { error: error.message },
+        { status: 401 }
+      );
+    }
+
+    // Get user profile
+    const { data: profile, error: profileError } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('id', data.user.id)
+      .single();
+
+    if (profileError) {
+      return NextResponse.json(
+        { error: 'Profile not found' },
+        { status: 404 }
+      );
+    }
+
+    // Get role-specific profile
+    let roleProfile = null;
+    if (profile.role === 'mother') {
+      const { data } = await supabase
+        .from('mother_profiles')
+        .select('*')
+        .eq('id', data.user.id)
+        .single();
+      roleProfile = data;
+    } else if (profile.role === 'doctor') {
+      const { data } = await supabase
+        .from('doctor_profiles')
+        .select('*')
+        .eq('id', data.user.id)
+        .single();
+      roleProfile = data;
+    }
+
+    return NextResponse.json({
+      session: data.session,
+      user: data.user,
+      profile: {
+        ...profile,
+        ...roleProfile
+      }
+    });
+
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      return NextResponse.json(
+        { error: 'Validation failed', details: error.errors },
+        { status: 400 }
+      );
+    }
+
+    console.error('Login error:', error);
+    return NextResponse.json(
+      { error: 'Login failed' },
+      { status: 500 }
+    );
+  }
+}
+```
+
+### 4.9 Profile Endpoint
+
+Create `apps/api/app/api/profile/route.ts`:
+
+```typescript
+import { NextRequest, NextResponse } from 'next/server';
+import { withAuth } from '@/lib/middleware/auth';
+import { supabase } from '@/lib/supabase';
+
+export async function GET(request: NextRequest) {
+  const authResult = await withAuth(request);
+  
+  if (authResult instanceof NextResponse) {
+    return authResult;
+  }
+
+  const { user, profile } = authResult;
+
+  // Get role-specific profile
+  let roleProfile = null;
+  
+  if (profile.role === 'mother') {
+    const { data } = await supabase
+      .from('mother_profiles')
+      .select('*')
+      .eq('id', user.id)
+      .single();
+    roleProfile = data;
+  } else if (profile.role === 'doctor') {
+    const { data } = await supabase
+      .from('doctor_profiles')
+      .select('*')
+      .eq('id', user.id)
+      .single();
+    roleProfile = data;
+  }
+
+  return NextResponse.json({
+    ...profile,
+    ...roleProfile
+  });
+}
+```
+
+---
+
+## 🎯 Task 5: Mobile App Setup
+
+### 5.1 Initialize Expo App
+
+```bash
+cd apps
+npx create-expo-app mobile --template blank-typescript
+cd mobile
+```
+
+### 5.2 Install Dependencies
+
+```bash
+npx expo install expo-router expo-constants expo-linking expo-status-bar
+npm install @supabase/supabase-js @react-native-async-storage/async-storage
+npm install zustand @tanstack/react-query
+npm install i18next react-i18next expo-localization
+npm install react-native-paper
+npm install zod react-hook-form @hookform/resolvers
+```
+
+### 5.3 Configure app.json
+
+Update `apps/mobile/app.json`:
+
+```json
+{
+  "expo": {
+    "name": "umaycare",
+    "slug": "umaycare",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/images/logo.png",
+    "scheme": "umaycare",
+    "userInterfaceStyle": "automatic",
+    "splash": {
+      "image": "./assets/images/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffe2d9"
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.spailorllc.umaycare"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/images/adaptive-icon.png",
+        "backgroundColor": "#ffe2d9"
+      },
+      "package": "com.spailorllc.umaycare"
+    },
+    "plugins": [
+      "expo-router"
+    ],
+    "experiments": {
+      "typedRoutes": true
+    }
+  }
+}
+```
+
+### 5.4 Environment Variables
+
+Create `apps/mobile/.env`:
+
+```env
+EXPO_PUBLIC_SUPABASE_URL=your-supabase-url
+EXPO_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
+EXPO_PUBLIC_API_URL=http://localhost:3000
+```
+
+### 5.5 Supabase Client
+
+Create `apps/mobile/lib/supabase.ts`:
+
+```typescript
+import 'react-native-url-polyfill/auto';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { createClient } from '@supabase/supabase-js';
+
+const supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL!;
+const supabaseAnonKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY!;
+
+export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+  auth: {
+    storage: AsyncStorage,
+    autoRefreshToken: true,
+    persistSession: true,
+    detectSessionInUrl: false
+  }
+});
+```
+
+### 5.6 i18n Configuration
+
+Create `apps/mobile/lib/i18n.ts`:
+
+```typescript
+import i18n from 'i18next';
+import { initReactI18next } from 'react-i18next';
+import * as Localization from 'expo-localization';
+import { translations } from '@umaycare/shared';
+
+i18n
+  .use(initReactI18next)
+  .init({
+    resources: translations,
+    lng: Localization.locale.split('-')[0],
+    fallbackLng: 'en',
+    interpolation: {
+      escapeValue: false
+    }
+  });
+
+export default i18n;
+```
+
+### 5.7 Auth Store
+
+Create `apps/mobile/store/authStore.ts`:
+
+```typescript
+import { create } from 'zustand';
+import { User, Session } from '@supabase/supabase-js';
+import { UserProfile } from '@umaycare/shared';
+
+interface AuthState {
+  user: User | null;
+  session: Session | null;
+  profile: UserProfile | null;
+  loading: boolean;
+  setUser: (user: User | null) => void;
+  setSession: (session: Session | null) => void;
+  setProfile: (profile: UserProfile | null) => void;
+  setLoading: (loading: boolean) => void;
+  signOut: () => void;
+}
+
+export const useAuthStore = create<AuthState>((set) => ({
+  user: null,
+  session: null,
+  profile: null,
+  loading: true,
+  setUser: (user) => set({ user }),
+  setSession: (session) => set({ session }),
+  setProfile: (profile) => set({ profile }),
+  setLoading: (loading) => set({ loading }),
+  signOut: () => set({ user: null, session: null, profile: null })
+}));
+```
+
+### 5.8 Theme Hook
+
+Create `apps/mobile/hooks/useTheme.ts`:
+
+```typescript
+import { useColorScheme } from 'react-native';
+import { theme } from '@umaycare/shared';
+
+export function useTheme() {
+  const colorScheme = useColorScheme();
+  const isDark = colorScheme === 'dark';
+  
+  return {
+    colors: isDark ? theme.dark : theme.light,
+    isDark
+  };
+}
+```
+
+### 5.9 Login Screen
+
+Create `apps/mobile/app/(auth)/login.tsx`:
+
+```typescript
+import React, { useState } from 'react';
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  StyleSheet,
+  KeyboardAvoidingView,
+  Platform,
+  Alert
+} from 'react-native';
+import { router } from 'expo-router';
+import { useTranslation } from 'react-i18next';
+import { supabase } from '@/lib/supabase';
+import { useAuthStore } from '@/store/authStore';
+import { useTheme } from '@/hooks/useTheme';
+
+export default function LoginScreen() {
+  const { t } = useTranslation();
+  const { colors } = useTheme();
+  const setUser = useAuthStore((state) => state.setUser);
+  const setSession = useAuthStore((state) => state.setSession);
+  const setProfile = useAuthStore((state) => state.setProfile);
+
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  const handleLogin = async () => {
+    if (!email || !password) {
+      Alert.alert('Error', 'Please fill in all fields');
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password
+      });
+
+      if (error) throw error;
+
+      // Fetch profile
+      const { data: profile, error: profileError } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', data.user.id)
+        .single();
+
+      if (profileError) throw profileError;
+
+      setUser(data.user);
+      setSession(data.session);
+      setProfile(profile);
+
+      // Navigate based on role
+      if (profile.role === 'mother') {
+        router.replace('/(mother)');
+      } else if (profile.role === 'doctor') {
+        router.replace('/(doctor)');
+      }
+
+    } catch (error: any) {
+      Alert.alert('Login Failed', error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <KeyboardAvoidingView
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      style={[styles.container, { backgroundColor: colors.background }]}
+    >
+      <View style={styles.content}>
+        <Text style={[styles.title, { color: colors.text }]}>
+          umaycare
+        </Text>
+        
+        <TextInput
+          style={[styles.input, { 
+            backgroundColor: colors.surface,
+            color: colors.text,
+            borderColor: colors.border
+          }]}
+          placeholder={t('auth.email')}
+          placeholderTextColor={colors.textSecondary}
+          value={email}
+          onChangeText={setEmail}
+          autoCapitalize="none"
+          keyboardType="email-address"
+          editable={!loading}
+        />
+
+        <TextInput
+          style={[styles.input, { 
+            backgroundColor: colors.surface,
+            color: colors.text,
+            borderColor: colors.border
+          }]}
+          placeholder={t('auth.password')}
+          placeholderTextColor={colors.textSecondary}
+          value={password}
+          onChangeText={setPassword}
+          secureTextEntry
+          editable={!loading}
+        />
+
+        <TouchableOpacity
+          style={[styles.button, { 
+            backgroundColor: colors.primary,
+            opacity: loading ? 0.6 : 1
+          }]}
+          onPress={handleLogin}
+          disabled={loading}
+        >
+          <Text style={styles.buttonText}>
+            {loading ? t('common.loading') : t('auth.login')}
+          </Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          onPress={() => router.push('/(auth)/register')}
+          disabled={loading}
+        >
+          <Text style={[styles.linkText, { color: colors.primary }]}>
+            {t('auth.dont_have_account')}
+          </Text>
+        </TouchableOpacity>
+      </View>
+    </KeyboardAvoidingView>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1
+  },
+  content: {
+    flex: 1,
+    justifyContent: 'center',
+    padding: 20
+  },
+  title: {
+    fontSize: 32,
+    fontWeight: 'bold',
+    marginBottom: 40,
+    textAlign: 'center'
+  },
+  input: {
+    borderWidth: 1,
+    borderRadius: 8,
+    padding: 15,
+    marginBottom: 15,
+    fontSize: 16
+  },
+  button: {
+    borderRadius: 8,
+    padding: 15,
+    alignItems: 'center',
+    marginTop: 10
+  },
+  buttonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '600'
+  },
+  linkText: {
+    marginTop: 20,
+    textAlign: 'center',
+    fontSize: 14
+  }
+});
+```
+
+### 5.10 Register Screen
+
+Create `apps/mobile/app/(auth)/register.tsx`:
+
+```typescript
+import React, { useState } from 'react';
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  StyleSheet,
+  KeyboardAvoidingView,
+  Platform,
+  Alert,
+  ScrollView
+} from 'react-native';
+import { router } from 'expo-router';
+import { useTranslation } from 'react-i18next';
+import { supabase } from '@/lib/supabase';
+import { useTheme } from '@/hooks/useTheme';
+
+export default function RegisterScreen() {
+  const { t } = useTranslation();
+  const { colors } = useTheme();
+
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [fullName, setFullName] = useState('');
+  const [phone, setPhone] = useState('');
+  const [role, setRole] = useState<'mother' | 'doctor' | 'partner'>('mother');
+  const [loading, setLoading] = useState(false);
+
+  const handleRegister = async () => {
+    if (!email || !password || !fullName) {
+      Alert.alert('Error', 'Please fill in required fields');
+      return;
+    }
+
+    if (password.length < 8) {
+      Alert.alert('Error', t('auth.password_min_length'));
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      const { error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            full_name: fullName,
+            role,
+            phone,
+            preferred_language: 'en'
+          }
+        }
+      });
+
+      if (error) throw error;
+
+      Alert.alert(
+        'Success',
+        t('auth.register_success'),
+        [
+          {
+            text: 'OK',
+            onPress: () => router.replace('/(auth)/login')
+          }
+        ]
+      );
+
+    } catch (error: any) {
+      Alert.alert('Registration Failed', error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <KeyboardAvoidingView
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      style={[styles.container, { backgroundColor: colors.background }]}
+    >
+      <ScrollView contentContainerStyle={styles.content}>
+        <Text style={[styles.title, { color: colors.text }]}>
+          {t('auth.register')}
+        </Text>
+
+        <TextInput
+          style={[styles.input, { 
+            backgroundColor: colors.surface,
+            color: colors.text,
+            borderColor: colors.border
+          }]}
+          placeholder={t('auth.full_name')}
+          placeholderTextColor={colors.textSecondary}
+          value={fullName}
+          onChangeText={setFullName}
+          editable={!loading}
+        />
+
+        <TextInput
+          style={[styles.input, { 
+            backgroundColor: colors.surface,
+            color: colors.text,
+            borderColor: colors.border
+          }]}
+          placeholder={t('auth.email')}
+          placeholderTextColor={colors.textSecondary}
+          value={email}
+          onChangeText={setEmail}
+          autoCapitalize="none"
+          keyboardType="email-address"
+          editable={!loading}
+        />
+
+        <TextInput
+          style={[styles.input, { 
+            backgroundColor: colors.surface,
+            color: colors.text,
+            borderColor: colors.border
+          }]}
+          placeholder={t('auth.phone')}
+          placeholderTextColor={colors.textSecondary}
+          value={phone}
+          onChangeText={setPhone}
+          keyboardType="phone-pad"
+          editable={!loading}
+        />
+
+        <TextInput
+          style={[styles.input, { 
+            backgroundColor: colors.surface,
+            color: colors.text,
+            borderColor: colors.border
+          }]}
+          placeholder={t('auth.password')}
+          placeholderTextColor={colors.textSecondary}
+          value={password}
+          onChangeText={setPassword}
+          secureTextEntry
+          editable={!loading}
+        />
+
+        <View style={styles.roleContainer}>
+          {(['mother', 'doctor', 'partner'] as const).map((r) => (
+            <TouchableOpacity
+              key={r}
+              style={[
+                styles.roleButton,
+                {
+                  backgroundColor: role === r ? colors.primary : colors.surface,
+                  borderColor: colors.border
+                }
+              ]}
+              onPress={() => setRole(r)}
+              disabled={loading}
+            >
+              <Text style={[
+                styles.roleText,
+                { color: role === r ? '#fff' : colors.text }
+              ]}>
+                {t(`auth.register_as_${r}`)}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+
+        <TouchableOpacity
+          style={[styles.button, { 
+            backgroundColor: colors.primary,
+            opacity: loading ? 0.6 : 1
+          }]}
+          onPress={handleRegister}
+          disabled={loading}
+        >
+          <Text style={styles.buttonText}>
+            {loading ? t('common.loading') : t('auth.register')}
+          </Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          onPress={() => router.back()}
+          disabled={loading}
+        >
+          <Text style={[styles.linkText, { color: colors.primary }]}>
+            {t('auth.already_have_account')}
+          </Text>
+        </TouchableOpacity>
+      </ScrollView>
+    </KeyboardAvoidingView>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1
+  },
+  content: {
+    flexGrow: 1,
+    justifyContent: 'center',
+    padding: 20
+  },
+  title: {
+    fontSize: 28,
+    fontWeight: 'bold',
+    marginBottom: 30,
+    textAlign: 'center'
+  },
+  input: {
+    borderWidth: 1,
+    borderRadius: 8,
+    padding: 15,
+    marginBottom: 15,
+    fontSize: 16
+  },
+  roleContainer: {
+    flexDirection: 'column',
+    gap: 10,
+    marginBottom: 20
+  },
+  roleButton: {
+    borderWidth: 1,
+    borderRadius: 8,
+    padding: 12,
+    alignItems: 'center'
+  },
+  roleText: {
+    fontSize: 14,
+    fontWeight: '500'
+  },
+  button: {
+    borderRadius: 8,
+    padding: 15,
+    alignItems: 'center',
+    marginTop: 10
+  },
+  buttonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '600'
+  },
+  linkText: {
+    marginTop: 20,
+    textAlign: 'center',
+    fontSize: 14
+  }
+});
+```
+
+### 5.11 App Layout
+
+Create `apps/mobile/app/_layout.tsx`:
+
+```typescript
+import { useEffect } from 'react';
+import { Slot, SplashScreen, router } from 'expo-router';
+import { supabase } from '@/lib/supabase';
+import { useAuthStore } from '@/store/authStore';
+import '@/lib/i18n';
+
+SplashScreen.preventAutoHideAsync();
+
+export default function RootLayout() {
+  const { setUser, setSession, setProfile, setLoading } = useAuthStore();
+
+  useEffect(() => {
+    // Check initial session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+      setUser(session?.user ?? null);
+
+      if (session?.user) {
+        fetchProfile(session.user.id);
+      } else {
+        setLoading(false);
+        SplashScreen.hideAsync();
+      }
+    });
+
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (_event, session) => {
+        setSession(session);
+        setUser(session?.user ?? null);
+
+        if (session?.user) {
+          await fetchProfile(session.user.id);
+        } else {
+          setProfile(null);
+          setLoading(false);
+        }
+      }
+    );
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, []);
+
+  const fetchProfile = async (userId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', userId)
+        .single();
+
+      if (error) throw error;
+
+      setProfile(data);
+
+      // Navigate based on role
+      if (data.role === 'mother') {
+        router.replace('/(mother)');
+      } else if (data.role === 'doctor') {
+        router.replace('/(doctor)');
+      } else {
+        router.replace('/(auth)/login');
+      }
+
+    } catch (error) {
+      console.error('Error fetching profile:', error);
+      router.replace('/(auth)/login');
+    } finally {
+      setLoading(false);
+      SplashScreen.hideAsync();
+    }
+  };
+
+  return <Slot />;
+}
+```
+
+### 5.12 Mother Home Screen (Placeholder)
+
+Create `apps/mobile/app/(mother)/index.tsx`:
+
+```typescript
+import React from 'react';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { useTranslation } from 'react-i18next';
+import { router } from 'expo-router';
+import { useTheme } from '@/hooks/useTheme';
+import { useAuthStore } from '@/store/authStore';
+import { supabase } from '@/lib/supabase';
+
+export default function MotherHomeScreen() {
+  const { t } = useTranslation();
+  const { colors } = useTheme();
+  const { profile, signOut } = useAuthStore();
+
+  const handleSignOut = async () => {
+    await supabase.auth.signOut();
+    signOut();
+    router.replace('/(auth)/login');
+  };
+
+  return (
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
+      <Text style={[styles.title, { color: colors.text }]}>
+        {t('mother.home_title')}
+      </Text>
+      <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
+        Welcome, {profile?.full_name}
+      </Text>
+      <TouchableOpacity
+        style={[styles.button, { backgroundColor: colors.primary }]}
+        onPress={handleSignOut}
+      >
+        <Text style={styles.buttonText}>{t('auth.logout')}</Text>
+      </TouchableOpacity>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    marginBottom: 10
+  },
+  subtitle: {
+    fontSize: 16,
+    marginBottom: 30
+  },
+  button: {
+    paddingHorizontal: 30,
+    paddingVertical: 12,
+    borderRadius: 8
+  },
+  buttonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '600'
+  }
+});
+```
+
+### 5.13 Doctor Home Screen (Placeholder)
+
+Create `apps/mobile/app/(doctor)/index.tsx`:
+
+```typescript
+import React from 'react';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { useTranslation } from 'react-i18next';
+import { router } from 'expo-router';
+import { useTheme } from '@/hooks/useTheme';
+import { useAuthStore } from '@/store/authStore';
+import { supabase } from '@/lib/supabase';
+
+export default function DoctorHomeScreen() {
+  const { t } = useTranslation();
+  const { colors } = useTheme();
+  const { profile, signOut } = useAuthStore();
+
+  const handleSignOut = async () => {
+    await supabase.auth.signOut();
+    signOut();
+    router.replace('/(auth)/login');
+  };
+
+  return (
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
+      <Text style={[styles.title, { color: colors.text }]}>
+        {t('doctor.home_title')}
+      </Text>
+      <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
+        Welcome, Dr. {profile?.full_name}
+      </Text>
+      <TouchableOpacity
+        style={[styles.button, { backgroundColor: colors.primary }]}
+        onPress={handleSignOut}
+      >
+        <Text style={styles.buttonText}>{t('auth.logout')}</Text>
+      </TouchableOpacity>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    marginBottom: 10
+  },
+  subtitle: {
+    fontSize: 16,
+    marginBottom: 30
+  },
+  button: {
+    paddingHorizontal: 30,
+    paddingVertical: 12,
+    borderRadius: 8
+  },
+  buttonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '600'
+  }
+});
+```
+
+---
+
+## 🎯 Task 6: Basic Unit Tests
+
+### 6.1 API Tests Setup
+
+Create `apps/api/jest.config.js`:
+
+```javascript
+module.exports = {
+  preset: 'ts-jest',
+  testEnvironment: 'node',
+  roots: ['<rootDir>/tests'],
+  testMatch: ['**/*.test.ts'],
+  collectCoverageFrom: [
+    'app/**/*.ts',
+    'lib/**/*.ts',
+    '!**/*.d.ts'
+  ]
+};
+```
+
+### 6.2 Sample Test
+
+Create `apps/api/tests/auth.test.ts`:
+
+```typescript
+import { describe, it, expect } from '@jest/globals';
+
+describe('Auth API', () => {
+  it('should validate registration schema', () => {
+    const validData = {
+      email: 'test@example.com',
+      password: 'password123',
+      full_name: 'Test User',
+      role: 'mother'
+    };
+    
+    expect(validData.email).toContain('@');
+    expect(validData.password.length).toBeGreaterThanOrEqual(8);
+  });
+
+  it('should reject invalid email', () => {
+    const invalidEmail = 'notanemail';
+    expect(invalidEmail).not.toContain('@');
+  });
+});
+```
+
+---
+
+## ✅ Phase 1 Completion Checklist
+
+Before stopping, verify that ALL these items are completed:
+
+- [ ] Monorepo structure created with workspaces
+- [ ] Shared package with types, theme, constants, i18n
+- [ ] Supabase project created and database schema migrated
+- [ ] Backend API with register, login, profile endpoints
+- [ ] Mobile app initialized with Expo
+- [ ] Login screen functional
+- [ ] Register screen functional
+- [ ] Role-based navigation (Mother/Doctor home placeholders)
+- [ ] i18n configured with 3 languages (en, tr, mk)
+- [ ] Theme system (light/dark) implemented
+- [ ] Auth store working with Zustand
+- [ ] Environment variables configured
+- [ ] Basic unit tests written
+- [ ] All code compiles without errors
+- [ ] .gitignore properly configured
+
+---
+
+## 🛑 STOP HERE
+
+### What to Do Next:
+
+1. **Summarize** what you implemented in Phase 1
+2. **List** any issues or deviations
+3. **Ask the human** to perform manual testing:
+   - Test user registration
+   - Test email confirmation (check inbox)
+   - Test login
+   - Test role-based navigation
+   - Test language switching
+   - Test theme switching (light/dark)
+   - Test logout
+
+4. **Wait for confirmation** before starting Phase 2
+
+### Manual Testing Checklist for Human:
+
+```
+[ ] Can register as Mother
+[ ] Can register as Doctor
+[ ] Email confirmation received
+[ ] Can login after confirmation
+[ ] Mother sees mother home screen
+[ ] Doctor sees doctor home screen
+[ ] Language can be changed
+[ ] Theme switches between light/dark
+[ ] Logout works correctly
+[ ] API endpoints respond correctly
+```
+
+**DO NOT PROCEED TO PHASE 2 WITHOUT EXPLICIT APPROVAL**

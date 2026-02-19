@@ -1,15 +1,15 @@
 # 01 - Project Overview
 
-**Proje:** BabyCare  
+**Proje:** Umay Care  
 **Şirket:** Spailor LLC  
-**Tarih:** 2025-01-28  
+**Tarih:** 2026-01-28  
 **Durum:** MVP Development
 
 ---
 
 ## 1. Proje Hakkında
 
-BabyCare, anne ve bebek sağlığı takibi için geliştirilmiş kapsamlı bir sağlık platformudur. Anneler, doktorlar ve sağlık asistanları arasında güvenli iletişim ve veri paylaşımı sağlar.
+Umay Care, anne ve bebek sağlığı takibi için geliştirilmiş kapsamlı bir sağlık platformudur. Anneler, doktorlar ve sağlık asistanları arasında güvenli iletişim ve veri paylaşımı sağlar.
 
 ### 1.1 Temel Amaçlar
 - ✅ Bebek sağlık kayıtlarının dijital ortamda güvenli takibi
@@ -396,7 +396,7 @@ BabyCare, anne ve bebek sağlığı takibi için geliştirilmiş kapsamlı bir s
 - Önemli bildirimler
 
 **Sender:** info@spailor.com  
-**Sender Name:** BabyCare by Spailor
+**Sender Name:** Umay Care by Spailor
 
 ---
 
@@ -536,7 +536,7 @@ BabyCare, anne ve bebek sağlığı takibi için geliştirilmiş kapsamlı bir s
 - mcy@spailor.com
 
 **Genel İletişim:** info@spailor.com  
-**GitHub:** https://github.com/spailor/babycare  
+**GitHub:** https://github.com/spailor/umaycare  
 **Dokümantasyon:** /docs klasörü
 
 ---
