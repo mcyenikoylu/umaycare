@@ -1,0 +1,1053 @@
+# 02 - Technical Architecture
+
+**Proje:** BabyCare  
+**Tarih:** 2025-01-28  
+**Dosya:** Technical Architecture & Stack
+
+---
+
+## 1. Genel Mimari
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                      CLIENT LAYER                            │
+├───────────────────┬─────────────────────┬──────────────────┤
+│   Mobile App      │  Doctor Web Portal  │  Admin Portal    │
+│  (React Native)   │    (Next.js)        │   (Next.js)      │
+│   iOS & Android   │                     │                  │
+└───────────────────┴─────────────────────┴──────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────┐
+│                      API LAYER                               │
+│                  Next.js API Routes                          │
+│               (Hetzner Ubuntu 22 Server)                     │
+│         api.domainname.com                                   │
+└─────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌────────────────┬──────────────┬────────────┬────────────────┐
+│   Supabase     │   Stripe     │  OpenAI    │    MailJet     │
+│  (DB + Auth)   │  (Payments)  │  (AI Chat) │    (Email)     │
+└────────────────┴──────────────┴────────────┴────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────┐
+│              INFRASTRUCTURE LAYER                            │
+│  Hetzner (API + Web) | Firebase (FCM) | GitHub (CI/CD)      │
+└─────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## 2. Technology Stack Detayı
+
+### 2.1 Frontend - Mobile
+
+```json
+{
+  "platform": "React Native",
+  "tool": "Expo SDK 51+",
+  "language": "TypeScript 5.x",
+  "navigation": "Expo Router (File-based)",
+  "state_management": "Zustand",
+  "data_fetching": "@tanstack/react-query",
+  "ui_library": "React Native Paper",
+  "styling": "NativeWind (Tailwind for RN)",
+  "i18n": "i18next + expo-localization",
+  "forms": "react-hook-form + zod",
+  "notifications": "@react-native-firebase/messaging",
+  "maps": "react-native-maps + Mapbox",
+  "storage": "@react-native-async-storage/async-storage",
+  "image_picker": "expo-image-picker",
+  "camera": "expo-camera"
+}
+```
+
+**Klasör Yapısı:**
+```
+apps/mobile/
+├── app/                      # Expo Router (file-based routing)
+│   ├── (auth)/
+│   │   ├── login.tsx
+│   │   ├── register.tsx
+│   │   └── forgot-password.tsx
+│   ├── (mother)/
+│   │   ├── _layout.tsx
+│   │   ├── index.tsx
+│   │   ├── babies/
+│   │   ├── appointments/
+│   │   ├── doctors/
+│   │   ├── chat/
+│   │   └── profile/
+│   ├── (doctor)/
+│   │   ├── _layout.tsx
+│   │   ├── index.tsx
+│   │   ├── calendar/
+│   │   ├── patients/
+│   │   └── content/
+│   └── _layout.tsx
+├── components/
+│   ├── ui/                   # Reusable UI components
+│   ├── forms/               # Form components
+│   └── shared/              # Shared components
+├── hooks/
+│   ├── useAuth.ts
+│   ├── useTheme.ts
+│   └── useBabies.ts
+├── services/
+│   ├── api.ts
+│   ├── supabase.ts
+│   └── fcm.ts
+├── store/
+│   ├── authStore.ts
+│   └── themeStore.ts
+├── utils/
+│   ├── validators.ts
+│   └── helpers.ts
+├── assets/
+│   ├── images/
+│   │   ├── logo.png
+│   │   └── baby-avatars/
+│   └── fonts/
+├── constants/
+│   ├── colors.ts
+│   └── config.ts
+└── types/
+    └── index.ts
+```
+
+### 2.2 Frontend - Web Portals
+
+```json
+{
+  "framework": "Next.js 14+ (App Router)",
+  "language": "TypeScript 5.x",
+  "styling": "Tailwind CSS 3.x",
+  "ui_components": "shadcn/ui",
+  "state_management": "Zustand",
+  "data_fetching": "@tanstack/react-query",
+  "forms": "react-hook-form + zod",
+  "i18n": "next-i18next",
+  "charts": "recharts",
+  "tables": "@tanstack/react-table",
+  "calendar": "react-big-calendar",
+  "rich_text_editor": "tiptap",
+  "notifications": "react-hot-toast"
+}
+```
+
+**Klasör Yapısı (Doctor Portal örnek):**
+```
+apps/web-doctor-portal/
+├── src/
+│   ├── app/
+│   │   ├── (auth)/
+│   │   │   ├── login/
+│   │   │   └── layout.tsx
+│   │   ├── (dashboard)/
+│   │   │   ├── page.tsx          # Dashboard
+│   │   │   ├── calendar/
+│   │   │   ├── patients/
+│   │   │   ├── content/
+│   │   │   │   ├── articles/
+│   │   │   │   └── videos/
+│   │   │   ├── settings/
+│   │   │   └── layout.tsx
+│   │   └── layout.tsx
+│   ├── components/
+│   │   ├── ui/                   # shadcn/ui components
+│   │   ├── dashboard/
+│   │   ├── calendar/
+│   │   └── shared/
+│   ├── lib/
+│   │   ├── api.ts
+│   │   ├── supabase.ts
+│   │   └── utils.ts
+│   ├── hooks/
+│   ├── store/
+│   ├── types/
+│   └── styles/
+│       └── globals.css
+├── public/
+│   └── assets/
+└── next.config.js
+```
+
+### 2.3 Backend - API
+
+```json
+{
+  "framework": "Next.js 14+ API Routes",
+  "language": "TypeScript 5.x",
+  "runtime": "Node.js 18+",
+  "database_client": "@supabase/supabase-js",
+  "orm": "Supabase Queries (no ORM)",
+  "validation": "zod",
+  "authentication": "Supabase Auth + JWT",
+  "payment": "@stripe/stripe-js",
+  "ai": "openai",
+  "email": "node-mailjet",
+  "push_notifications": "firebase-admin",
+  "job_scheduler": "node-cron",
+  "logging": "winston",
+  "monitoring": "sentry (optional)"
+}
+```
+
+**Klasör Yapısı:**
+```
+apps/api/
+├── src/
+│   ├── app/
+│   │   └── api/
+│   │       ├── auth/
+│   │       │   ├── register/route.ts
+│   │       │   ├── login/route.ts
+│   │       │   ├── logout/route.ts
+│   │       │   └── refresh/route.ts
+│   │       ├── mothers/
+│   │       │   ├── route.ts
+│   │       │   ├── [id]/route.ts
+│   │       │   └── me/
+│   │       │       ├── route.ts
+│   │       │       └── partners/route.ts
+│   │       ├── doctors/
+│   │       ├── babies/
+│   │       ├── appointments/
+│   │       ├── treatments/
+│   │       ├── prescriptions/
+│   │       ├── lab-tests/
+│   │       ├── content/
+│   │       │   ├── articles/
+│   │       │   └── videos/
+│   │       ├── ai-chat/
+│   │       ├── locations/
+│   │       ├── payments/
+│   │       │   ├── checkout/route.ts
+│   │       │   └── subscriptions/route.ts
+│   │       ├── webhooks/
+│   │       │   └── stripe/route.ts
+│   │       └── admin/
+│   ├── lib/
+│   │   ├── supabase.ts
+│   │   ├── stripe.ts
+│   │   ├── openai.ts
+│   │   ├── mailjet.ts
+│   │   ├── fcm.ts
+│   │   └── middleware/
+│   │       ├── auth.ts
+│   │       ├── role-check.ts
+│   │       └── rate-limit.ts
+│   ├── services/
+│   │   ├── email.service.ts
+│   │   ├── notification.service.ts
+│   │   └── ai-chat.service.ts
+│   ├── utils/
+│   │   ├── validators.ts
+│   │   ├── errors.ts
+│   │   └── helpers.ts
+│   ├── types/
+│   │   └── api.types.ts
+│   └── config/
+│       └── index.ts
+├── tests/
+│   ├── unit/
+│   ├── integration/
+│   └── setup.ts
+├── .env.local
+├── .env.example
+├── next.config.js
+├── tsconfig.json
+└── package.json
+```
+
+### 2.4 Shared Packages
+
+```
+packages/
+├── shared/
+│   ├── types/
+│   │   ├── user.ts
+│   │   ├── baby.ts
+│   │   ├── appointment.ts
+│   │   ├── treatment.ts
+│   │   └── index.ts
+│   ├── utils/
+│   │   ├── date.ts
+│   │   ├── format.ts
+│   │   └── validators.ts
+│   ├── constants/
+│   │   ├── roles.ts
+│   │   ├── statuses.ts
+│   │   └── config.ts
+│   ├── i18n/
+│   │   ├── en.json
+│   │   ├── tr.json
+│   │   ├── mk.json
+│   │   └── index.ts
+│   ├── theme/
+│   │   ├── colors.ts
+│   │   └── index.ts
+│   ├── package.json
+│   └── tsconfig.json
+└── api-client/
+    ├── src/
+    │   ├── client.ts
+    │   ├── auth.ts
+    │   ├── mothers.ts
+    │   ├── doctors.ts
+    │   ├── babies.ts
+    │   ├── appointments.ts
+    │   └── types.ts
+    ├── package.json
+    └── tsconfig.json
+```
+
+---
+
+## 3. Database Architecture
+
+### 3.1 Supabase PostgreSQL
+
+**Versiyon:** PostgreSQL 15  
+**Hosting:** Supabase Cloud  
+**Features:**
+- Row Level Security (RLS)
+- Real-time subscriptions (opsiyonel)
+- Storage buckets
+- Auth integration
+
+**Ana Tablolar:**
+```
+- profiles                 (Tüm kullanıcılar)
+- mother_profiles          (Anne özel verileri)
+- doctor_profiles          (Hekim özel verileri)
+- babies                   (Bebek kartları)
+- appointments             (Randevular)
+- availability_slots       (Hekim müsaitlik)
+- availability_exceptions  (Müsaitlik istisnaları)
+- treatment_records        (Tedavi kayıtları)
+- prescriptions            (Reçeteler)
+- lab_tests                (Laboratuvar testleri)
+- articles                 (Makale içerik)
+- videos                   (Video içerik)
+- subscriptions            (Abonelikler)
+- subscription_packages    (Paketler)
+- chat_sessions            (AI chat oturumları)
+- chat_messages            (Chat mesajları)
+- healthcare_locations     (Hastane/Eczane)
+- doctor_assistants        (Doktor-Asistan ilişkisi)
+- mother_partners          (Anne-Eş ilişkisi)
+- partner_baby_access      (Eş'in bebek erişimi)
+```
+
+**İndeksler:**
+```sql
+-- Performans için kritik indeksler
+CREATE INDEX idx_profiles_role ON profiles(role);
+CREATE INDEX idx_babies_mother_id ON babies(mother_id);
+CREATE INDEX idx_appointments_doctor_date ON appointments(doctor_id, appointment_date);
+CREATE INDEX idx_appointments_status ON appointments(status);
+CREATE INDEX idx_subscriptions_user ON subscriptions(user_id);
+```
+
+### 3.2 Storage Buckets
+
+```
+Bucket: avatars
+├── mothers/
+│   └── {user_id}.jpg
+├── doctors/
+│   └── {user_id}.jpg
+└── babies/
+    └── {baby_id}.jpg
+
+Bucket: content
+├── articles/
+│   └── {article_id}/
+│       └── cover.jpg
+└── videos/
+    └── {video_id}/
+        └── thumbnail.jpg
+
+Bucket: lab-results
+└── {baby_id}/
+    └── {test_id}/
+        └── result.pdf
+```
+
+---
+
+## 4. External Services
+
+### 4.1 Supabase
+**Purpose:** Database, Authentication, Storage  
+**URL:** https://your-project.supabase.co  
+**Features:**
+- PostgreSQL database
+- JWT-based authentication
+- Email confirmation
+- Storage buckets
+- Row Level Security
+
+**Configuration:**
+```typescript
+// lib/supabase.ts
+import { createClient } from '@supabase/supabase-js';
+
+export const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!
+);
+```
+
+### 4.2 Stripe
+**Purpose:** Payment Processing  
+**Account:** Spailor LLC  
+**Features:**
+- Subscription management
+- Checkout sessions
+- Webhooks
+- Customer portal
+
+**Products:**
+```
+- Free Tier (no charge)
+- Standard Package ($9.99/month)
+- Premium Package ($19.99/month)
+```
+
+**Configuration:**
+```typescript
+// lib/stripe.ts
+import Stripe from 'stripe';
+
+export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
+  apiVersion: '2024-11-20.acacia'
+});
+```
+
+### 4.3 OpenAI
+**Purpose:** AI Chat Assistant  
+**Model:** GPT-4o-mini  
+**Features:**
+- Chat completions
+- Context management
+- Safety controls
+
+**Configuration:**
+```typescript
+// lib/openai.ts
+import OpenAI from 'openai';
+
+export const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY!
+});
+```
+
+**Usage Limits:**
+- Max tokens per request: 1000
+- Max messages per session: 50
+- Daily cleanup of old sessions
+
+### 4.4 MailJet
+**Purpose:** Transactional Emails  
+**Sender:** info@spailor.com  
+**Features:**
+- Email templates
+- Tracking
+- SMTP relay
+
+**Email Types:**
+```
+- Welcome email
+- Email confirmation
+- Password reset
+- Appointment notifications
+- Partner invite
+- Assistant invite
+```
+
+**Configuration:**
+```typescript
+// lib/mailjet.ts
+import Mailjet from 'node-mailjet';
+
+export const mailjet = Mailjet.apiConnect(
+  process.env.MAILJET_API_KEY!,
+  process.env.MAILJET_API_SECRET!
+);
+```
+
+### 4.5 Firebase Cloud Messaging
+**Purpose:** Push Notifications  
+**Platforms:** iOS, Android  
+**Features:**
+- Real-time notifications
+- Topic-based messaging
+- Device token management
+
+**Configuration:**
+```typescript
+// lib/fcm.ts
+import * as admin from 'firebase-admin';
+
+admin.initializeApp({
+  credential: admin.credential.cert({
+    projectId: process.env.FIREBASE_PROJECT_ID,
+    clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+    privateKey: process.env.FIREBASE_PRIVATE_KEY
+  })
+});
+
+export const fcm = admin.messaging();
+```
+
+### 4.6 Mapbox / OpenStreetMap
+**Purpose:** Location Services  
+**Features:**
+- Hospital/Pharmacy locations
+- Map display
+- Geocoding
+
+**Choice:**
+- **Primary:** Mapbox (paid, better features)
+- **Fallback:** OpenStreetMap + Leaflet (free)
+
+---
+
+## 5. Infrastructure
+
+### 5.1 Hetzner Ubuntu 22 Server
+
+**Specs:**
+- CPU: 4 cores
+- RAM: 8GB
+- Storage: 80GB SSD
+- OS: Ubuntu 22.04 LTS
+
+**Installed Services:**
+- Node.js 18+
+- PM2 (process manager)
+- Nginx (reverse proxy)
+- Certbot (SSL certificates)
+
+**Deployment Structure:**
+```
+/var/www/
+├── babycare-api/
+│   ├── .next/
+│   ├── package.json
+│   └── .env.production
+├── doctor-portal/
+│   ├── .next/
+│   ├── package.json
+│   └── .env.production
+└── admin-portal/
+    ├── .next/
+    ├── package.json
+    └── .env.production
+```
+
+**PM2 Configuration:**
+```json
+{
+  "apps": [
+    {
+      "name": "babycare-api",
+      "cwd": "/var/www/babycare-api",
+      "script": "npm",
+      "args": "start",
+      "env": {
+        "NODE_ENV": "production",
+        "PORT": 3000
+      }
+    },
+    {
+      "name": "doctor-portal",
+      "cwd": "/var/www/doctor-portal",
+      "script": "npm",
+      "args": "start",
+      "env": {
+        "NODE_ENV": "production",
+        "PORT": 3001
+      }
+    },
+    {
+      "name": "admin-portal",
+      "cwd": "/var/www/admin-portal",
+      "script": "npm",
+      "args": "start",
+      "env": {
+        "NODE_ENV": "production",
+        "PORT": 3002
+      }
+    }
+  ]
+}
+```
+
+**Nginx Configuration:**
+```nginx
+# /etc/nginx/sites-available/babycare-api
+server {
+    listen 80;
+    server_name api.domainname.com;
+
+    location / {
+        proxy_pass http://localhost:3000;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host $host;
+        proxy_cache_bypass $http_upgrade;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+}
+```
+
+### 5.2 Mobile Deployment
+
+**Platform:** Expo Application Services (EAS)
+
+**Build Configuration:**
+```json
+// eas.json
+{
+  "build": {
+    "development": {
+      "developmentClient": true,
+      "distribution": "internal"
+    },
+    "preview": {
+      "distribution": "internal",
+      "ios": {
+        "simulator": true
+      }
+    },
+    "production": {
+      "distribution": "store"
+    }
+  },
+  "submit": {
+    "production": {
+      "ios": {
+        "appleId": "doga.kilinc@spailor.com",
+        "ascAppId": "your-asc-app-id"
+      },
+      "android": {
+        "serviceAccountKeyPath": "./google-play-service-account.json"
+      }
+    }
+  }
+}
+```
+
+**Commands:**
+```bash
+# Build for iOS
+eas build --platform ios --profile production
+
+# Build for Android
+eas build --platform android --profile production
+
+# Submit to App Store
+eas submit --platform ios --latest
+
+# Submit to Google Play
+eas submit --platform android --latest
+```
+
+---
+
+## 6. CI/CD Pipeline
+
+### 6.1 GitHub Actions Workflows
+
+**Workflow Dosyaları:**
+```
+.github/workflows/
+├── api-deploy.yml           # API deployment
+├── web-deploy.yml           # Web portals deployment
+├── mobile-build.yml         # Mobile app build
+├── tests.yml                # Run tests
+└── quality-check.yml        # Linting, type-check
+```
+
+**API Deploy Workflow:**
+```yaml
+name: Deploy API
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'apps/api/**'
+      - 'packages/**'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Setup Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Build
+        run: npm run build --workspace=apps/api
+      
+      - name: Deploy to Hetzner
+        uses: appleboy/scp-action@master
+        with:
+          host: ${{ secrets.HETZNER_HOST }}
+          username: ${{ secrets.HETZNER_USER }}
+          key: ${{ secrets.HETZNER_SSH_KEY }}
+          source: "apps/api/.next,apps/api/package.json"
+          target: "/var/www/babycare-api"
+      
+      - name: Restart PM2
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.HETZNER_HOST }}
+          username: ${{ secrets.HETZNER_USER }}
+          key: ${{ secrets.HETZNER_SSH_KEY }}
+          script: |
+            cd /var/www/babycare-api
+            npm install --production
+            pm2 restart babycare-api
+```
+
+---
+
+## 7. Monitoring & Logging
+
+### 7.1 Application Monitoring
+
+**Tools (Optional for MVP):**
+- Sentry (error tracking)
+- Vercel Analytics (web vitals)
+- Google Analytics (user analytics)
+
+**Basic Logging:**
+```typescript
+// lib/logger.ts
+import winston from 'winston';
+
+export const logger = winston.createLogger({
+  level: 'info',
+  format: winston.format.json(),
+  transports: [
+    new winston.transports.File({ filename: 'error.log', level: 'error' }),
+    new winston.transports.File({ filename: 'combined.log' })
+  ]
+});
+
+if (process.env.NODE_ENV !== 'production') {
+  logger.add(new winston.transports.Console({
+    format: winston.format.simple()
+  }));
+}
+```
+
+### 7.2 Database Monitoring
+
+- Supabase Dashboard (query performance)
+- Connection pooling
+- Slow query log
+
+### 7.3 Server Monitoring
+
+```bash
+# Basic monitoring commands
+pm2 status
+pm2 logs babycare-api
+pm2 monit
+
+# Nginx logs
+tail -f /var/log/nginx/access.log
+tail -f /var/log/nginx/error.log
+```
+
+---
+
+## 8. Security Architecture
+
+### 8.1 Authentication Flow
+
+```
+1. User registers
+   ├─> Supabase creates auth.users entry
+   ├─> Email confirmation sent (MailJet)
+   └─> Profile created in profiles table
+
+2. User confirms email
+   └─> Account activated
+
+3. User logs in
+   ├─> Supabase validates credentials
+   ├─> JWT token issued
+   └─> Refresh token stored
+
+4. API requests
+   ├─> Bearer token in Authorization header
+   ├─> Middleware validates JWT
+   ├─> User role checked
+   └─> Request processed
+```
+
+### 8.2 Row Level Security (RLS)
+
+**Example Policies:**
+```sql
+-- Mothers can only see their own babies
+CREATE POLICY "mothers_own_babies" ON babies
+FOR SELECT USING (
+  mother_id IN (
+    SELECT id FROM mother_profiles WHERE id = auth.uid()
+  )
+);
+
+-- Partners can see authorized babies
+CREATE POLICY "partners_authorized_babies" ON babies
+FOR SELECT USING (
+  id IN (
+    SELECT baby_id FROM partner_baby_access 
+    WHERE partner_id = auth.uid()
+  )
+);
+
+-- Doctors can see their patients' babies
+CREATE POLICY "doctors_patient_babies" ON babies
+FOR SELECT USING (
+  id IN (
+    SELECT baby_id FROM appointments 
+    WHERE doctor_id = auth.uid()
+  )
+);
+```
+
+### 8.3 API Security
+
+**Rate Limiting:**
+```typescript
+// middleware/rate-limit.ts
+import { Ratelimit } from '@upstash/ratelimit';
+import { Redis } from '@upstash/redis';
+
+const ratelimit = new Ratelimit({
+  redis: Redis.fromEnv(),
+  limiter: Ratelimit.slidingWindow(10, '10 s'),
+});
+
+export async function rateLimitMiddleware(request: NextRequest) {
+  const ip = request.ip ?? 'anonymous';
+  const { success } = await ratelimit.limit(ip);
+  
+  if (!success) {
+    return new Response('Too many requests', { status: 429 });
+  }
+}
+```
+
+**Input Validation:**
+```typescript
+// Example with Zod
+import { z } from 'zod';
+
+const babySchema = z.object({
+  full_name: z.string().min(2).max(100),
+  date_of_birth: z.string().datetime(),
+  gender: z.enum(['male', 'female', 'other']),
+  baby_type: z.enum(['single', 'twin', 'triplet', 'quadruplet'])
+});
+
+export async function POST(request: NextRequest) {
+  const body = await request.json();
+  const validatedData = babySchema.parse(body); // Throws if invalid
+  // ...
+}
+```
+
+---
+
+## 9. Performance Optimization
+
+### 9.1 Database Optimization
+
+- **Indexes** on frequently queried columns
+- **Connection pooling** (Supabase handles this)
+- **Query optimization** (use EXPLAIN ANALYZE)
+- **Pagination** for large datasets
+
+### 9.2 API Optimization
+
+- **Response caching** (Next.js cache)
+- **API route optimization**
+- **Lazy loading** of related data
+- **GraphQL** consideration for future
+
+### 9.3 Frontend Optimization
+
+**Mobile:**
+- Code splitting (Expo)
+- Image optimization (expo-image)
+- List virtualization (FlashList)
+- Memoization (React.memo, useMemo)
+
+**Web:**
+- Next.js automatic optimizations
+- Image optimization (next/image)
+- Code splitting
+- Lazy loading components
+
+---
+
+## 10. Development Workflow
+
+### 10.1 Monorepo Setup
+
+**Package Manager:** npm workspaces
+
+```json
+// Root package.json
+{
+  "name": "babycare-monorepo",
+  "private": true,
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
+  "scripts": {
+    "dev": "turbo run dev",
+    "build": "turbo run build",
+    "test": "turbo run test",
+    "lint": "turbo run lint",
+    "type-check": "turbo run type-check"
+  },
+  "devDependencies": {
+    "turbo": "^1.11.0",
+    "typescript": "^5.3.0"
+  }
+}
+```
+
+### 10.2 Development Commands
+
+```bash
+# Install all dependencies
+npm install
+
+# Run mobile app
+npm run dev --workspace=apps/mobile
+
+# Run API
+npm run dev --workspace=apps/api
+
+# Run doctor portal
+npm run dev --workspace=apps/web-doctor-portal
+
+# Run all tests
+npm test
+
+# Type check
+npm run type-check
+
+# Lint
+npm run lint
+```
+
+---
+
+## 11. Environment Variables
+
+### 11.1 Required Variables
+
+**All Apps:**
+```env
+# Supabase
+NEXT_PUBLIC_SUPABASE_URL=
+NEXT_PUBLIC_SUPABASE_ANON_KEY=
+SUPABASE_SERVICE_ROLE_KEY=
+
+# API URL
+NEXT_PUBLIC_API_URL=
+FRONTEND_URL=
+```
+
+**API Only:**
+```env
+# Stripe
+STRIPE_SECRET_KEY=
+STRIPE_PUBLISHABLE_KEY=
+STRIPE_WEBHOOK_SECRET=
+
+# OpenAI
+OPENAI_API_KEY=
+
+# MailJet
+MAILJET_API_KEY=
+MAILJET_API_SECRET=
+MAILJET_FROM_EMAIL=info@spailor.com
+MAILJET_FROM_NAME=BabyCare by Spailor
+
+# Firebase
+FCM_SERVER_KEY=
+FIREBASE_PROJECT_ID=
+FIREBASE_CLIENT_EMAIL=
+FIREBASE_PRIVATE_KEY=
+
+# Mapbox (optional)
+MAPBOX_ACCESS_TOKEN=
+```
+
+**Mobile Only:**
+```env
+EXPO_PUBLIC_SUPABASE_URL=
+EXPO_PUBLIC_SUPABASE_ANON_KEY=
+EXPO_PUBLIC_API_URL=
+EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY=
+```
+
+---
+
+## 12. Disaster Recovery
+
+### 12.1 Backup Strategy
+
+**Database:**
+- Supabase automatic daily backups
+- Point-in-time recovery (7 days)
+- Manual backups before major changes
+
+**Storage:**
+- Supabase Storage redundancy
+- Regular export of critical assets
+
+**Code:**
+- Git version control
+- Protected main branch
+- Feature branch workflow
+
+### 12.2 Recovery Plan
+
+1. Database restore from Supabase backup
+2. Redeploy from Git
+3. Restore environment variables
+4. Restart services (PM2)
+5. Verify functionality
+
+---
+
+**Dokümantasyon Sonu**  
+**Son Güncelleme:** 2025-01-28  
+**Sonraki Dosya:** 03-DATABASE-SCHEMA.md
