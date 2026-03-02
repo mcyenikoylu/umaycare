@@ -9,6 +9,15 @@ module.exports = {
   theme: {
     extend: {
       colors: {
+        umay: {
+          blush: '#ffe2d9',
+          white: '#fffdfc',
+          primary: '#d67a7a',
+          secondary: '#e3d4f3',
+          accent: '#7bc7f3',
+          text: '#524947',
+          surface: '#F8F5F4',
+        },
         primary: {
           50: '#fdf2f8',
           100: '#fce7f3',

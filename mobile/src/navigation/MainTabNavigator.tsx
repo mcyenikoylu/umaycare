@@ -1,7 +1,6 @@
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Ionicons } from '@expo/vector-icons';
-import { HomeScreen } from '@screens/HomeScreen';
-import { ProfileScreen } from '@screens/ProfileScreen';
+import { HomeScreen, ProfileScreen } from '@screens/index';
 import { MainTabParamList } from '@app-types/navigation';
 
 const Tab = createBottomTabNavigator<MainTabParamList>();
@@ -23,8 +22,8 @@ export function MainTabNavigator() {
 
           return <Ionicons name={iconName} size={size} color={color} />;
         },
-        tabBarActiveTintColor: '#ec4899',
-        tabBarInactiveTintColor: 'gray',
+        tabBarActiveTintColor: '#d67a7a',
+        tabBarInactiveTintColor: '#524947',
         headerShown: false,
       })}
     >

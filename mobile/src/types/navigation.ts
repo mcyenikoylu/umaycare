@@ -1,14 +1,12 @@
 export type RootStackParamList = {
   Main: undefined;
-  // Auth ekranları buraya eklenebilir
-  // Login: undefined;
-  // Register: undefined;
+  Login: undefined;
+  Signup: undefined;
 };
 
 export type MainTabParamList = {
   Home: undefined;
   Profile: undefined;
-  // Diğer tab ekranları buraya eklenebilir
 };
 
 declare global {
